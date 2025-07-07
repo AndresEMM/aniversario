@@ -2,45 +2,119 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Feliz 2 Meses</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;500;700&display=swap" rel="stylesheet">
+
   <style>
-    body { display:flex; align-items:center; justify-content:center;
-           flex-direction:column; height:100vh; margin:0;
-           font-family: sans-serif; background: #fafafa; }
-    #mensaje { font-size:1.2rem; text-align:center; max-width:300px; }
-    #anim { width:200px; height:200px; }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    html, body { width:100%; height:100%; overflow:hidden; font-family:'Roboto', sans-serif; background:#111; color:#fff; }
+    #tsparticles { position:fixed; top:0; left:0; width:100%; height:100%; z-index:0; }
+    #container { position:relative; z-index:1; width:100%; height:100%;
+                 display:flex; flex-direction:column; align-items:center; justify-content:center; }
+
+    body { cursor:none; }
+    #cursor {
+      position:fixed; top:0; left:0; width:20px; height:20px;
+      border:2px solid #fff; border-radius:50%; pointer-events:none;
+      transform:translate(-50%, -50%); transition: transform .1s ease-out, background .2s;
+    }
+    #cursor.expand { transform:translate(-50%, -50%) scale(2); background:rgba(255,255,255,0.3); }
+
+    #anim {
+      width:200px; height:200px; margin-bottom:2rem;
+    }
+
+    #mensaje {
+      max-width:320px; text-align:center; font-size:1.2rem;
+      opacity:0; transform:scale(0.9);
+      line-height:1.4;
+    }
   </style>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.7.11/lottie.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/typed.js@2.0.12"></script>
 </head>
 <body>
-  <div id="anim"></div>
-  <div id="mensaje"></div>
+
+  <div id="tsparticles"></div>
+
+  <div id="container">
+    <div id="anim"></div>
+    <div id="mensaje"></div>
+  </div>
+
+  <div id="cursor"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/tsparticles@2.3.3/tsparticles.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.7.11/lottie.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.5/TextPlugin.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
 
   <script>
-    lottie.loadAnimation({
-      container: document.getElementById('anim'),
-      renderer: 'svg',
-      loop: true,
-      autoplay: true,
-      path: 'https://assets.lottiefiles.com/datafiles/xyz1234/congratulations.json'
+    tsParticles.load("tsparticles", {
+      background: { color: "#111" },
+      fpsLimit: 60,
+      interactivity: {
+        events: {
+          onHover: { enable: true, mode: "repulse" },
+          onClick: { enable: true, mode: "push" }
+        },
+        modes: {
+          repulse: { distance: 100 },
+          push: { quantity: 4 }
+        }
+      },
+      particles: {
+        color: { value: "#ffffff" },
+        links: { enable: true, color: "#ffffff", distance: 150, opacity: 0.4 },
+        move: { enable: true, speed: 2 },
+        size: { value: 3 }
+      }
     });
 
-    new Typed('#mensaje', {
-      strings: [
-        "¡Feliz 2 meses, mi amor! 💕<br>",
-        "Gracias por cada llamada, cada risa y por ser mi compañera de aventuras a la distancia.<br><br>",
-        "Te quiero y aprecio mucho."
-      ],
-      typeSpeed: 40,
-      backSpeed: 0,
-      smartBackspace: true,
-      showCursor: false,
-      onComplete: () => {
-        confetti({ particleCount: 200, spread: 70 });
-      }
+    const cursor = document.getElementById('cursor');
+    document.addEventListener('mousemove', e => {
+      cursor.style.left = e.clientX + 'px';
+      cursor.style.top  = e.clientY + 'px';
+    });
+    document.addEventListener('mousedown', () => {
+      cursor.classList.add('expand');
+      setTimeout(() => cursor.classList.remove('expand'), 150);
+    });
+
+    lottie.loadAnimation({
+      container: document.getElementById('anim'),
+      renderer:  'svg',
+      loop:      true,
+      autoplay:  true,
+      path:      'https://assets.lottiefiles.com/datafiles/xyz1234/congratulations.json'
+    });
+
+    gsap.registerPlugin(TextPlugin);
+    const tl = gsap.timeline({ delay: 1 });
+
+    tl.to('#mensaje', {
+      duration: 2,
+      text: "¡Feliz 2 meses, mi amor! 💕",
+      ease: "none",
+      onStart: () => gsap.to('#mensaje', {duration:0.5, opacity:1, scale:1, ease:"back.out(1.7)"})
+    });
+
+    tl.to('#mensaje', {
+      duration: 2,
+      text: "Gracias por cada llamada, cada risa y por ser mi compañera de aventuras a la distancia.",
+      ease: "none",
+      delay: 1,
+      onComplete: () => confetti({ particleCount:200, spread:70 })
+    });
+
+    tl.to('#mensaje', {
+      duration: 2,
+      text: "Te quiero y te aprecio muchísimo.",
+      ease: "none",
+      delay: 1,
+      onComplete: () => confetti({ particleCount:150, spread:50 })
     });
   </script>
 </body>
