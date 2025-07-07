@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Feliz 2 Meses</title>
+  <style>
+    body { display:flex; align-items:center; justify-content:center;
+           flex-direction:column; height:100vh; margin:0;
+           font-family: sans-serif; background: #fafafa; }
+    #mensaje { font-size:1.2rem; text-align:center; max-width:300px; }
+    #anim { width:200px; height:200px; }
+  </style>
+</head>
+<body>
+  <div id="anim"></div>
+  <div id="mensaje"></div>
+
+  <script>
+    lottie.loadAnimation({
+      container: document.getElementById('anim'),
+      renderer: 'svg',
+      loop: true,
+      autoplay: true,
+      path: 'https://assets.lottiefiles.com/datafiles/xyz1234/congratulations.json'
+    });
+
+    new Typed('#mensaje', {
+      strings: [
+        "¡Feliz 2 meses, mi amor! 💕<br>",
+        "Gracias por cada llamada, cada risa y por ser mi compañera de aventuras a la distancia.<br><br>",
+        "Te quiero y aprecio mucho."
+      ],
+      typeSpeed: 40,
+      backSpeed: 0,
+      smartBackspace: true,
+      showCursor: false,
+      onComplete: () => {
+        confetti({ particleCount: 200, spread: 70 });
+      }
+    });
+  </script>
+</body>
+</html>
