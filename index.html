@@ -1,120 +1,378 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Feliz 2 Meses</title>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Una Aventura para Dos</title>
 
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;500;700&display=swap" rel="stylesheet">
+  <!-- Fuentes estilo fantasía -->
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Great+Vibes&display=swap" rel="stylesheet">
+  <!-- GSAP para animaciones -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 
   <style>
-    * { margin:0; padding:0; box-sizing:border-box; }
-    html, body { width:100%; height:100%; overflow:hidden; font-family:'Roboto', sans-serif; background:#111; color:#fff; }
-    #tsparticles { position:fixed; top:0; left:0; width:100%; height:100%; z-index:0; }
-    #container { position:relative; z-index:1; width:100%; height:100%;
-                 display:flex; flex-direction:column; align-items:center; justify-content:center; }
-
-    body { cursor:none; }
-    #cursor {
-      position:fixed; top:0; left:0; width:20px; height:20px;
-      border:2px solid #fff; border-radius:50%; pointer-events:none;
-      transform:translate(-50%, -50%); transition: transform .1s ease-out, background .2s;
+    :root{
+      --bg:#0a0d14;
+      --paper:#f6edd9;
+      --ink:#1b1a17;
+      --gold:#e0c06c;
+      --seal:#a2101d;
+      --accent:#7a5c2e;
+      --btn-yes:#2e7d32;
+      --btn-no:#8d2a2a;
     }
-    #cursor.expand { transform:translate(-50%, -50%) scale(2); background:rgba(255,255,255,0.3); }
-
-    #anim {
-      width:200px; height:200px; margin-bottom:2rem;
+    *{box-sizing:border-box;margin:0;padding:0}
+    html,body{height:100%}
+    body{
+      background: linear-gradient(180deg, #0b0f19 0%, #101725 60%, #0b0f19 100%);
+      overflow:hidden;
+      color:var(--ink);
     }
 
-    #mensaje {
-      max-width:320px; text-align:center; font-size:1.2rem;
-      opacity:0; transform:scale(0.9);
-      line-height:1.4;
+    /* Viento de fondo (líneas sutiles) */
+    .wind::before, .wind::after{
+      content:"";
+      position:fixed; inset:-50%;
+      background:
+        repeating-linear-gradient( -12deg,
+          rgba(255,255,255,.04) 0 6px,
+          transparent 6px 28px),
+        repeating-linear-gradient( 12deg,
+          rgba(255,255,255,.03) 0 8px,
+          transparent 8px 30px);
+      animation: windFlow 18s linear infinite;
+      pointer-events:none;
+      z-index:-2;
     }
+    .wind::after{ animation-duration: 28s; opacity:.5; }
+    @keyframes windFlow{ to{ transform: translateX(10%) } }
+
+    /* Estrellas/twinkles */
+    .twinkle{
+      position:fixed; inset:0; pointer-events:none; z-index:-1;
+      background-image:
+        radial-gradient(2px 2px at 20% 30%, rgba(255,255,255,.45), transparent 60%),
+        radial-gradient(2px 2px at 70% 20%, rgba(255,255,255,.35), transparent 60%),
+        radial-gradient(2px 2px at 80% 70%, rgba(255,255,255,.4), transparent 60%),
+        radial-gradient(2px 2px at 30% 80%, rgba(255,255,255,.3), transparent 60%);
+      animation: twinkle 3.6s ease-in-out infinite alternate;
+      filter: blur(.2px);
+    }
+    @keyframes twinkle{
+      from{ opacity:.45; transform:translateY(0) }
+      to{ opacity:.75; transform:translateY(-2px) }
+    }
+
+    /* Contenedor carta */
+    .stage{
+      position:fixed; left:50%; top:50%;
+      transform: translate(-50%,-50%);
+      width: min(92vw, 680px); height: min(80vh, 520px);
+      display:grid; place-items:center;
+      perspective:1200px;
+    }
+
+    .letter{
+      position:relative;
+      width: min(92vw, 620px);
+      min-height: min(72vh, 460px);
+      transform-origin:center;
+      filter: drop-shadow(0 25px 40px rgba(0,0,0,.45));
+      will-change: transform;
+    }
+
+    /* Papel pergamino */
+    .paper{
+      position:relative; border-radius:12px;
+      padding:24px 22px 88px;
+      background:
+        radial-gradient(1200px 800px at 20% 0%, rgba(255,255,255,.35), transparent 50%),
+        radial-gradient(1200px 800px at 90% 20%, rgba(255,255,255,.18), transparent 60%),
+        linear-gradient(180deg, #f8f0da 0%, #f1e5c7 60%, #eadcbb 100%);
+      box-shadow:
+        inset 0 0 0 2px rgba(0,0,0,.06),
+        inset 0 0 70px rgba(122,92,46,.15);
+      border: 1px solid rgba(0,0,0,.1);
+    }
+
+    /* “Cierre” (flap) para simular que se cierra antes de volar */
+    .flap{
+      position:absolute; inset:0; border-radius:12px;
+      background: linear-gradient(180deg, #eee0bf 0%, #e8d7ae 100%);
+      border:1px solid rgba(0,0,0,.12);
+      box-shadow: inset 0 -30px 60px rgba(0,0,0,.12);
+      transform-origin: top; transform: scaleY(0);
+      z-index:3;
+    }
+
+    /* Cabecera y firma */
+    .header{
+      text-align:center; margin-bottom:12px;
+    }
+    .header h1{
+      font-family:"Cinzel", serif; letter-spacing:.5px;
+      font-size: clamp(1.2rem, 2.4vw, 1.6rem);
+      color:#3a2b18;
+    }
+    .divider{
+      width: 86%; height: 1px; margin: 10px auto 16px;
+      background: linear-gradient(90deg, transparent, rgba(58,43,24,.35), transparent);
+    }
+
+    .body{
+      font-size: clamp(1rem, 2.2vw, 1.05rem);
+      line-height:1.6;
+      color:#2b2419;
+      text-wrap: pretty;
+    }
+    .dropcap:first-letter{
+      font-family:"Cinzel", serif;
+      float:left; font-size:2.4em; line-height:1;
+      padding: 0 .12em 0 0; color:#3a2b18;
+    }
+
+    .signature{
+      position:absolute; left:24px; bottom:16px; right:120px;
+      display:flex; flex-direction:column; gap:4px;
+      color:#3a2b18;
+    }
+    .sig-name{
+      font-family:"Great Vibes", cursive;
+      font-size: clamp(1.4rem, 3.2vw, 2rem);
+      color:#2f2619;
+    }
+    .sig-company{
+      font-family:"Cinzel", serif; font-size:.9rem; letter-spacing:.5px;
+      color:#5a4930;
+    }
+
+    /* Sello de cera */
+    .seal{
+      position:absolute; right:20px; bottom:20px;
+      width:86px; height:86px; border-radius:50%;
+      background:
+        radial-gradient(60% 60% at 35% 35%, #d32639 0%, #a2101d 60%, #6e0b14 100%);
+      box-shadow: inset 0 0 18px rgba(0,0,0,.35), 0 10px 24px rgba(0,0,0,.35);
+      display:grid; place-items:center; color:#f9d9d9;
+      text-align:center; padding:8px;
+      transform: rotate(-7deg);
+    }
+    .seal small{ font-family:"Cinzel", serif; font-size:.62rem; letter-spacing:.4px; display:block; opacity:.9 }
+    .seal b{ font-size:.95rem; letter-spacing:1.2px; display:block; }
+
+    /* Botones */
+    .actions{
+      position:absolute; left:0; right:0; bottom:14px;
+      display:flex; gap:10px; justify-content:center;
+    }
+    .btn{
+      border:none; cursor:pointer; padding:10px 16px;
+      border-radius:999px; font-weight:700; letter-spacing:.4px;
+      color:white; box-shadow: 0 6px 18px rgba(0,0,0,.22);
+      transform: translateZ(0); transition: transform .15s ease, box-shadow .15s ease;
+      font-family:"Cinzel", serif; font-size:.95rem;
+    }
+    .btn:active{ transform: translateY(1px) }
+    .yes{ background: linear-gradient(180deg, #3ca844, #2e7d32); }
+    .no{ background: linear-gradient(180deg, #a23b3b, #8d2a2a); }
+
+    /* Overlay de ACEPTAR */
+    .overlay{
+      position:fixed; inset:0; display:none; place-items:center;
+      background: radial-gradient(120% 80% at 50% 30%, rgba(224,192,108,.08), transparent 60%),
+                  rgba(6,7,12,.86);
+      color:#f8efe0; text-align:center; padding:18px;
+      z-index:20;
+    }
+    .overlay.active{ display:grid; }
+    .overlay h2{
+      font-family:"Great Vibes", cursive;
+      font-size: clamp(2rem, 6vw, 3.6rem);
+      color: var(--gold);
+      text-shadow: 0 0 16px rgba(224,192,108,.35);
+      margin-bottom: 10px;
+    }
+    .overlay p{
+      font-family:"Cinzel", serif;
+      font-size: clamp(1rem, 2.4vw, 1.2rem);
+      line-height:1.7;
+      max-width: 760px;
+      opacity:.95;
+    }
+
+    /* Versión “pequeña” cuando se va con el viento tras Declinar */
+    .letter.small{
+      width: 260px; min-height: 180px;
+      padding:0;
+    }
+
+    /* Selección de texto deshabilitada en carta */
+    .paper, .actions, .signature, .seal{ user-select:none }
+
   </style>
 </head>
-<body>
+<body class="wind">
 
-  <div id="tsparticles"></div>
+  <div class="twinkle" aria-hidden="true"></div>
 
-  <div id="container">
-    <div id="anim"></div>
-    <div id="mensaje"></div>
+  <div class="stage">
+    <div class="letter" id="letter">
+      <div class="paper">
+        <div class="flap" id="flap"></div>
+
+        <div class="header">
+          <h1>Convocatoria del Gremio de Aventureros</h1>
+          <div class="divider"></div>
+        </div>
+
+        <div class="body">
+          <p class="dropcap">
+            Bajo el amparo de dos lunas y la brisa del norte,
+            se extiende esta carta hacia ti, viajera de mis días. El Gremio
+            <strong>“Compañía de Dos Lunas”</strong> te invita a una pequeña
+            misión compartida: cruzar un puente más, aprender un hechizo nuevo de
+            risa, y explorar un mapa donde tus pasos se sienten muy cerca de los míos.
+          </p>
+          <p style="margin-top:10px">
+            Recompensas: un tesoro de momentos tranquilos, alguna que otra
+            batalla ganada a la distancia, y la promesa de escribir otra página
+            juntos. La ruta comienza hoy, y no requiere más que un sí sincero
+            y la voluntad de seguir descubriéndonos.
+          </p>
+          <p style="margin-top:10px">
+            Si aceptas, la aventura continuará en el próximo capítulo. Si decides
+            dejar pasar esta misión, el viento sabrá llevar de vuelta esta carta
+            sin rencores, como hacen los buenos relatos.
+          </p>
+        </div>
+
+        <div class="signature">
+          <div class="sig-name">Tu compañero de party</div>
+          <div class="sig-company">Compañía de Aventureros “Dos Lunas”</div>
+        </div>
+
+        <div class="seal" aria-hidden="true">
+          <small>GREMIO</small>
+          <b>2 ✦ L</b>
+          <small>OFICIAL</small>
+        </div>
+
+        <div class="actions">
+          <button class="btn yes" id="accept" aria-label="Aceptar la misión">Aceptar</button>
+          <button class="btn no" id="decline" aria-label="Declinar la misión">Declinar</button>
+        </div>
+      </div>
+    </div>
   </div>
 
-  <div id="cursor"></div>
-
-  <script src="https://cdn.jsdelivr.net/npm/tsparticles@2.3.3/tsparticles.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.7.11/lottie.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.5/gsap.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.5/TextPlugin.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+  <!-- Mensaje romántico final -->
+  <div class="overlay" id="overlay">
+    <div>
+      <h2>Has aceptado la aventura ✨</h2>
+      <p id="finalText">
+        Gracias por decir que sí. Me encanta este viaje contigo: paso a paso,
+        risa a risa, mapa a mapa. Prometo cuidar este camino y escuchar tu voz
+        como el mejor conjuro contra cualquier monstruo cotidiano.<br><br>
+        <em>…veremos cómo continúa la aventura a la próxima.</em>
+      </p>
+    </div>
+  </div>
 
   <script>
-    tsParticles.load("tsparticles", {
-      background: { color: "#111" },
-      fpsLimit: 60,
-      interactivity: {
-        events: {
-          onHover: { enable: true, mode: "repulse" },
-          onClick: { enable: true, mode: "push" }
-        },
-        modes: {
-          repulse: { distance: 100 },
-          push: { quantity: 4 }
-        }
-      },
-      particles: {
-        color: { value: "#ffffff" },
-        links: { enable: true, color: "#ffffff", distance: 150, opacity: 0.4 },
-        move: { enable: true, speed: 2 },
-        size: { value: 3 }
-      }
-    });
+    // ---------------------------
+    // Animación de entrada
+    // ---------------------------
+    const letter = document.getElementById('letter');
+    const flap = document.getElementById('flap');
+    const tlIntro = gsap.timeline({ defaults:{ ease:"power2.out" } });
 
-    const cursor = document.getElementById('cursor');
-    document.addEventListener('mousemove', e => {
-      cursor.style.left = e.clientX + 'px';
-      cursor.style.top  = e.clientY + 'px';
-    });
-    document.addEventListener('mousedown', () => {
-      cursor.classList.add('expand');
-      setTimeout(() => cursor.classList.remove('expand'), 150);
-    });
+    // Llega con el viento, se acerca y “flota” levemente
+    gsap.set(letter, { x: -280, y: -180, rotation: -12, scale: 0.7, opacity:0 });
+    tlIntro
+      .to(letter, { opacity:1, duration:.4 })
+      .to(letter, { x:0, y:0, rotation:-3, scale:1, duration:1.2 })
+      .to(letter, { rotation:0, duration:.6, ease:"sine.out" }, "-=0.2")
+      .add(()=>floatIdle());
 
-    lottie.loadAnimation({
-      container: document.getElementById('anim'),
-      renderer:  'svg',
-      loop:      true,
-      autoplay:  true,
-      path:      'https://assets.lottiefiles.com/datafiles/xyz1234/congratulations.json'
-    });
+    function floatIdle(){
+      gsap.to(letter, {
+        x: "+=8", y: "+=6", rotation: "+=0.6",
+        duration: 3.2, yoyo:true, repeat:-1, ease:"sine.inOut"
+      });
+    }
 
-    gsap.registerPlugin(TextPlugin);
-    const tl = gsap.timeline({ delay: 1 });
+    // ---------------------------
+    // Botones
+    // ---------------------------
+    const acceptBtn = document.getElementById('accept');
+    const declineBtn = document.getElementById('decline');
+    const overlay = document.getElementById('overlay');
 
-    tl.to('#mensaje', {
-      duration: 2,
-      text: "¡Feliz 2 meses, mi amor! 💕",
-      ease: "none",
-      onStart: () => gsap.to('#mensaje', {duration:0.5, opacity:1, scale:1, ease:"back.out(1.7)"})
-    });
+    acceptBtn.addEventListener('click', onAccept);
+    declineBtn.addEventListener('click', onDecline);
 
-    tl.to('#mensaje', {
-      duration: 2,
-      text: "Gracias por cada llamada, cada risa y por ser mi compañera de aventuras a la distancia.",
-      ease: "none",
-      delay: 1,
-      onComplete: () => confetti({ particleCount:200, spread:70 })
-    });
+    // ACEPTAR: mostrar overlay con mensaje romántico
+    function onAccept(){
+      gsap.killTweensOf(letter);
+      const tl = gsap.timeline();
+      tl.to(letter, { scale:0.98, duration:.2, ease:"power1.inOut" })
+        .to(letter, { opacity:0, y:10, duration:.35, ease:"power1.in" })
+        .add(()=> {
+          overlay.classList.add('active');
+          gsap.fromTo("#finalText",
+            { opacity:0, filter:"blur(6px)" },
+            { opacity:1, filter:"blur(0px)", duration:1.1, ease:"power2.out" }
+          );
+        });
+    }
 
-    tl.to('#mensaje', {
-      duration: 2,
-      text: "Te quiero y te aprecio muchísimo.",
-      ease: "none",
-      delay: 1,
-      onComplete: () => confetti({ particleCount:150, spread:50 })
+    // DECLINAR: se “cierra” y el viento se la lleva
+    function onDecline(){
+      gsap.killTweensOf(letter);
+
+      const tl = gsap.timeline();
+      // Cierra la carta (flap cubre)
+      tl.to(flap, { transformOrigin:"top", scaleY:1, duration:.35, ease:"power1.in" })
+        // Sale volando con el viento
+        .to(letter, {
+          x: window.innerWidth * 0.6,
+          y: -window.innerHeight * 0.5,
+          rotation: 28,
+          scale: 0.7,
+          duration: 1.2,
+          ease: "power2.in"
+        })
+        .add(()=> windLoop());
+    }
+
+    // Bucle de “volar con el viento” ya cerrada y más pequeña
+    function windLoop(){
+      letter.classList.add('small');
+
+      // Coloca la carta pequeña entrando desde la izquierda superior
+      gsap.set(letter, { x: -320, y: -120, rotation: -18, scale: 0.55, opacity: 0.9 });
+
+      // Repite el vuelo de izquierda a derecha, con un poco de vaivén
+      const onePass = ()=>{
+        gsap.to(letter, {
+          x: window.innerWidth + 320,
+          y: gsap.utils.random(-160, -40),
+          rotation: gsap.utils.random(-10, 24),
+          duration: gsap.utils.random(5.5, 7.5),
+          ease: "sine.inOut",
+          onComplete: ()=>{
+            // Reinicia al lado izquierdo y repite para siempre
+            gsap.set(letter, { x: -320, y: gsap.utils.random(-160, -40) });
+            onePass();
+          }
+        });
+      };
+      onePass();
+    }
+
+    // Ajustar ruta si cambia el tamaño de la ventana
+    window.addEventListener('resize', ()=>{
+      // No interrumpimos; los valores se recalcularán en próximos loops
     });
   </script>
 </body>
