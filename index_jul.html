@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>¡Feliz 2 Meses!</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/tsparticles@2.8.0/tsparticles.bundle.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.7.11/lottie.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/typed.js@2.0.12"></script>
+
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      overflow:hidden;
+      background: #111;
+      color: #fff;
+      font-family: "Segoe UI", sans-serif;
+      height:100vh;
+      cursor:none;
+    }
+
+    /* Canvas de partículas trasero */
+    #tsparticles {
+      position:fixed; top:0; left:0;
+      width:100%; height:100%;
+      z-index:-1;
+    }
+
+    .cursor {
+      position:fixed; top:0; left:0;
+      width:20px; height:20px;
+      border:2px solid #e91e63;
+      border-radius:50%;
+      transform:translate(-50%,-50%);
+      pointer-events:none;
+      transition: transform .1s ease-out;
+      z-index:10;
+    }
+
+    .container {
+      position:relative; z-index:1;
+      height:100%;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      text-align:center;
+      padding:1rem;
+    }
+
+    #lottieAnim {
+      width:180px; height:180px;
+      margin-bottom:1rem;
+    }
+
+    #animeMessage {
+      font-size:1.3rem;
+      line-height:1.4;
+      max-width:340px;
+      min-height:5em;
+      margin-bottom:2rem;
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="tsparticles"></div>
+  <div class="cursor"></div>
+
+  <div class="container">
+    <div id="lottieAnim"></div>
+    <div id="animeMessage"></div>
+  </div>
+
+  <script>
+    tsParticles.load("tsparticles", {
+      fpsLimit: 60,
+      background: { color: "transparent" },
+      interactivity: {
+        events: {
+          onHover: { enable: true, mode: "repulse" },
+          onClick: { enable: true, mode: "push" }
+        },
+        modes: {
+          repulse: { distance: 150 },
+          push: { quantity: 4 }
+        }
+      },
+      particles: {
+        color: { value: "#e91e63" },
+        links: { enable: false },
+        move: { enable: true, speed: 1 },
+        number: { value: 40 },
+        opacity: { value: 0.8 },
+        shape: {
+          type: "char",
+          character: {
+            value: ["🦇","🔮","🕷️","🌙"],
+            font: "Verdana",
+            style: "",
+            weight: "400",
+            fill: true
+          }
+        },
+        size: { value: { min: 18, max: 30 } }
+      }
+    });
+
+    const cursor = document.querySelector('.cursor');
+    document.addEventListener('mousemove', e => {
+      cursor.style.transform = `translate3d(${e.clientX}px, ${e.clientY}px, 0)`;
+    });
+
+    lottie.loadAnimation({
+      container: document.getElementById('lottieAnim'),
+      renderer: 'svg',
+      loop: true,
+      autoplay: true,
+      path: 'https://assets8.lottiefiles.com/packages/lf20_jbrw3hcz.json'
+    });
+
+    new Typed('#animeMessage', {
+      strings: [
+        "¡Feliz <strong>2 meses</strong>, mi Señorita! 💖\n\n" +
+        "Gracias por cada risa, cada charla,\n" +
+        "y por estar siempre cerca a pesar\nde la distancia.\n\n" +
+        "Te quiero y te aprecio mushio..\n\n" + 
+        "tome abua u3u"
+      ],
+      typeSpeed: 40,
+      backSpeed: 0,
+      fadeOut: false,
+      smartBackspace: true,
+      showCursor: true,
+      cursorChar: '▌',
+      onComplete: () => {
+        confetti({ particleCount: 150, spread: 60 });
+      }
+    });
+
+    function confetti(opts) {
+      if (!window.confettiLib) {
+        const s = document.createElement('script');
+        s.src = 'https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js';
+        s.onload = () => {
+          window.confettiLib = window.confetti;
+          window.confettiLib(opts);
+        };
+        document.head.appendChild(s);
+      } else {
+        window.confettiLib(opts);
+      }
+    }
+  </script>
+</body>
+</html>
