@@ -395,7 +395,7 @@
 
       const tl = gsap.timeline({ defaults:{ ease:"power2.out" } });
       // Mantenerlo pequeño mientras se acerca al centro
-      tl.to(letter, { x:0, y:0, rotation:-4, scale:0.75, duration:1.2 })
+      tl.to(letter, { x:0, y:0, rotation:-4, scale:0.35, duration:2.2 })
         // Restaurar tamaño normal (quita clase pequeña)
         .add(()=> letter.classList.remove('small'))
         .to(letter, { rotation:0, scale:1, duration:0.5, ease:"power1.out" })
