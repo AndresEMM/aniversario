@@ -84,7 +84,7 @@
     /* Papel pergamino */
     .paper{
       position:relative; border-radius:12px;
-      /* MÁS espacio inferior para separar botones de la firma */
+      /* espacio inferior para que botones no tapen firma */
       padding:24px 22px 140px;
       background:
         radial-gradient(1200px 800px at 20% 0%, rgba(255,255,255,.35), transparent 50%),
@@ -97,7 +97,7 @@
       overflow:hidden;
     }
 
-    /* FLAP del sobre: AHORA INICIA CERRADO (scaleY:1) */
+    /* FLAP del sobre: empieza cerrado (scaleY:1) */
     .flap{
       position:absolute; inset:0; border-radius:12px;
       background: linear-gradient(180deg, #eee0bf 0%, #e8d7ae 100%);
@@ -106,7 +106,6 @@
       transform-origin: top; transform: scaleY(1);
       z-index:3;
     }
-    /* Detalle triangular sutil de “tapa” del sobre */
     .flap::after{
       content:"";
       position:absolute; left:50%; top:8px; width:72%; height:52%;
@@ -140,7 +139,7 @@
       padding: 0 .12em 0 0; color:#3a2b18;
     }
 
-    /* SUBIMOS LA FIRMA para no chocar con botones */
+    /* Subimos firma para separarla de botones */
     .signature{
       position:absolute; left:24px; bottom:88px; right:120px;
       display:flex; flex-direction:column; gap:4px;
@@ -212,10 +211,11 @@
       opacity:.95;
     }
 
-    /* Versión “pequeña” cuando se va con el viento tras Declinar */
+    /* Versión pequeña (vuelo continuo tras Declinar) */
     .letter.small{
       width: 260px; min-height: 180px;
       padding:0;
+      cursor: pointer; /* Indica que se puede reabrir */
     }
   </style>
 </head>
@@ -226,7 +226,7 @@
   <div class="stage">
     <div class="letter" id="letter">
       <div class="paper">
-        <!-- AHORA el sobre inicia CERRADO -->
+        <!-- Inicia CERRADO -->
         <div class="flap" id="flap"></div>
 
         <div class="header">
@@ -294,25 +294,21 @@
     const declineBtn = document.getElementById('decline');
     const overlay = document.getElementById('overlay');
 
+    let isWindLooping = false; // estado: ¿vuela en ciclo?
+    let reopenHandlerAttached = false;
+
     // ---------------------------
-    // Animación de entrada: MÁS LARGA + abre el sobre al final
+    // Intro larga + abrir sobre
     // ---------------------------
-    // Comienza más lejos y pequeño, simulando vuelo largo
     gsap.set(letter, { x: -480, y: -220, rotation: -18, scale: 0.55, opacity:0 });
 
     const tlIntro = gsap.timeline({ defaults:{ ease:"power2.out" } });
     tlIntro
-      // aparece a lo lejos
       .to(letter, { opacity:1, duration:0.8 })
-      // se acerca un tramo
       .to(letter, { x:-120, y:-40, rotation:-8, scale:0.80, duration:1.8 })
-      // se acerca casi al centro
       .to(letter, { x:0, y:0, rotation:-4, scale:1.02, duration:1.6 })
-      // acomoda
       .to(letter, { rotation:0, scale:1, duration:0.8, ease:"power1.out" })
-      // ABRE el sobre (flap se repliega)
       .to(flap, { transformOrigin:"top", scaleY:0, duration:0.9, ease:"power2.inOut" }, ">-0.1")
-      // flote suave
       .add(()=>floatIdle());
 
     function floatIdle(){
@@ -323,7 +319,7 @@
     }
 
     // ---------------------------
-    // ACEPTAR: mensaje romántico
+    // ACEPTAR
     // ---------------------------
     acceptBtn.addEventListener('click', onAccept);
     function onAccept(){
@@ -341,16 +337,13 @@
     }
 
     // ---------------------------
-    // DECLINAR: cerrar y volar con el viento
+    // DECLINAR → cerrar + vuelo al ciclo izq→der
     // ---------------------------
     declineBtn.addEventListener('click', onDecline);
     function onDecline(){
       gsap.killTweensOf(letter);
-
       const tl = gsap.timeline();
-      // Cierra la carta (flap cubre de nuevo)
       tl.to(flap, { transformOrigin:"top", scaleY:1, duration:.45, ease:"power1.in" })
-        // Sale volando con el viento
         .to(letter, {
           x: window.innerWidth * 0.6,
           y: -window.innerHeight * 0.5,
@@ -359,11 +352,11 @@
           duration: 1.2,
           ease: "power2.in"
         })
-        .add(()=> windLoop());
+        .add(()=> startWindLoop());
     }
 
-    // Vuelo continuo tras declinar
-    function windLoop(){
+    function startWindLoop(){
+      isWindLooping = true;
       letter.classList.add('small');
       gsap.set(letter, { x: -320, y: -120, rotation: -18, scale: 0.55, opacity: 0.9 });
 
@@ -375,15 +368,44 @@
           duration: gsap.utils.random(5.5, 7.5),
           ease: "sine.inOut",
           onComplete: ()=>{
+            // reaparece por la izquierda
             gsap.set(letter, { x: -320, y: gsap.utils.random(-160, -40) });
             onePass();
           }
         });
       };
       onePass();
+
+      // Permitir reabrir al clic mientras vuela
+      if (!reopenHandlerAttached) {
+        letter.addEventListener('click', tryReopenFromWind);
+        reopenHandlerAttached = true;
+      }
     }
 
-    // (Opcional) manejar resize si quisieras recalcular algo; aquí no hace falta.
+    function tryReopenFromWind(){
+      if (!isWindLooping) return;
+      reopenFromWind();
+    }
+
+    // Reabrir: detener vuelo, volver al centro y abrir el sobre
+    function reopenFromWind(){
+      isWindLooping = false;
+      gsap.killTweensOf(letter); // detener animación actual del loop
+
+      const tl = gsap.timeline({ defaults:{ ease:"power2.out" } });
+      // Mantenerlo pequeño mientras se acerca al centro
+      tl.to(letter, { x:0, y:0, rotation:-4, scale:0.75, duration:1.2 })
+        // Restaurar tamaño normal (quita clase pequeña)
+        .add(()=> letter.classList.remove('small'))
+        .to(letter, { rotation:0, scale:1, duration:0.5, ease:"power1.out" })
+        // Abrir el sobre si estuviera cerrado
+        .to(flap, { transformOrigin:"top", scaleY:0, duration:0.7, ease:"power2.inOut" }, ">-0.15")
+        // Volver al “flote” suave
+        .add(()=> floatIdle());
+    }
+
+    // Resize: no es crítico recalcular nada porque el loop se resetea en cada pasada
     window.addEventListener('resize', ()=>{});
   </script>
 </body>
