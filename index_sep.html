@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Una Aventura para Dos</title>
+
+  <!-- Fuentes estilo fantasía -->
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Great+Vibes&display=swap" rel="stylesheet">
+  <!-- GSAP para animaciones -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+
+  <style>
+    :root{
+      --bg:#0a0d14;
+      --paper:#f6edd9;
+      --ink:#1b1a17;
+      --gold:#e0c06c;
+      --seal:#a2101d;
+      --accent:#7a5c2e;
+      --btn-yes:#2e7d32;
+      --btn-no:#8d2a2a;
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    html,body{height:100%}
+    body{
+      background: linear-gradient(180deg, #0b0f19 0%, #101725 60%, #0b0f19 100%);
+      overflow:hidden;
+      color:var(--ink);
+    }
+
+    /* Viento de fondo (líneas sutiles) */
+    .wind::before, .wind::after{
+      content:"";
+      position:fixed; inset:-50%;
+      background:
+        repeating-linear-gradient( -12deg,
+          rgba(255,255,255,.04) 0 6px,
+          transparent 6px 28px),
+        repeating-linear-gradient( 12deg,
+          rgba(255,255,255,.03) 0 8px,
+          transparent 8px 30px);
+      animation: windFlow 18s linear infinite;
+      pointer-events:none;
+      z-index:-2;
+    }
+    .wind::after{ animation-duration: 28s; opacity:.5; }
+    @keyframes windFlow{ to{ transform: translateX(10%) } }
+
+    /* Estrellas/twinkles */
+    .twinkle{
+      position:fixed; inset:0; pointer-events:none; z-index:-1;
+      background-image:
+        radial-gradient(2px 2px at 20% 30%, rgba(255,255,255,.45), transparent 60%),
+        radial-gradient(2px 2px at 70% 20%, rgba(255,255,255,.35), transparent 60%),
+        radial-gradient(2px 2px at 80% 70%, rgba(255,255,255,.4), transparent 60%),
+        radial-gradient(2px 2px at 30% 80%, rgba(255,255,255,.3), transparent 60%);
+      animation: twinkle 3.6s ease-in-out infinite alternate;
+      filter: blur(.2px);
+    }
+    @keyframes twinkle{
+      from{ opacity:.45; transform:translateY(0) }
+      to{ opacity:.75; transform:translateY(-2px) }
+    }
+
+    /* Escenario */
+    .stage{
+      position:fixed; left:50%; top:50%;
+      transform: translate(-50%,-50%);
+      width: min(92vw, 680px); height: min(80vh, 520px);
+      display:grid; place-items:center;
+      perspective:1200px;
+    }
+
+    .letter{
+      position:relative;
+      width: min(92vw, 620px);
+      min-height: min(72vh, 460px);
+      transform-origin:center;
+      filter: drop-shadow(0 25px 40px rgba(0,0,0,.45));
+      will-change: transform;
+    }
+
+    /* Papel pergamino */
+    .paper{
+      position:relative; border-radius:12px;
+      /* espacio inferior para que botones no tapen firma */
+      padding:24px 22px 140px;
+      background:
+        radial-gradient(1200px 800px at 20% 0%, rgba(255,255,255,.35), transparent 50%),
+        radial-gradient(1200px 800px at 90% 20%, rgba(255,255,255,.18), transparent 60%),
+        linear-gradient(180deg, #f8f0da 0%, #f1e5c7 60%, #eadcbb 100%);
+      box-shadow:
+        inset 0 0 0 2px rgba(0,0,0,.06),
+        inset 0 0 70px rgba(122,92,46,.15);
+      border: 1px solid rgba(0,0,0,.1);
+      overflow:hidden;
+    }
+
+    /* FLAP del sobre: empieza cerrado (scaleY:1) */
+    .flap{
+      position:absolute; inset:0; border-radius:12px;
+      background: linear-gradient(180deg, #eee0bf 0%, #e8d7ae 100%);
+      border:1px solid rgba(0,0,0,.12);
+      box-shadow: inset 0 -30px 60px rgba(0,0,0,.12);
+      transform-origin: top; transform: scaleY(1);
+      z-index:3;
+    }
+    .flap::after{
+      content:"";
+      position:absolute; left:50%; top:8px; width:72%; height:52%;
+      transform: translateX(-50%);
+      background: linear-gradient(180deg, rgba(0,0,0,.08), transparent);
+      clip-path: polygon(50% 0%, 100% 70%, 0% 70%);
+      opacity:.35; pointer-events:none;
+    }
+
+    /* Cabecera y firma */
+    .header{text-align:center; margin-bottom:12px;}
+    .header h1{
+      font-family:"Cinzel", serif; letter-spacing:.5px;
+      font-size: clamp(1.2rem, 2.4vw, 1.6rem);
+      color:#3a2b18;
+    }
+    .divider{
+      width: 86%; height: 1px; margin: 10px auto 16px;
+      background: linear-gradient(90deg, transparent, rgba(58,43,24,.35), transparent);
+    }
+
+    .body{
+      font-size: clamp(1rem, 2.2vw, 1.05rem);
+      line-height:1.6;
+      color:#2b2419;
+      text-wrap: pretty;
+    }
+    .dropcap:first-letter{
+      font-family:"Cinzel", serif;
+      float:left; font-size:2.4em; line-height:1;
+      padding: 0 .12em 0 0; color:#3a2b18;
+    }
+
+    /* Subimos firma para separarla de botones */
+    .signature{
+      position:absolute; left:24px; bottom:80px; right:120px;
+      display:flex; flex-direction:column; gap:4px;
+      color:#3a2b18;
+    }
+    .sig-name{
+      font-family:"Great Vibes", cursive;
+      font-size: clamp(1.4rem, 3.2vw, 2rem);
+      color:#2f2619;
+    }
+    .sig-company{
+      font-family:"Cinzel", serif; font-size:.9rem; letter-spacing:.5px;
+      color:#5a4930;
+    }
+
+    /* Sello de cera */
+    .seal{
+      position:absolute; right:20px; bottom:20px;
+      width:86px; height:86px; border-radius:50%;
+      background:
+        radial-gradient(60% 60% at 35% 35%, #d32639 0%, #a2101d 60%, #6e0b14 100%);
+      box-shadow: inset 0 0 18px rgba(0,0,0,.35), 0 10px 24px rgba(0,0,0,.35);
+      display:grid; place-items:center; color:#f9d9d9;
+      text-align:center; padding:8px;
+      transform: rotate(-7deg);
+      z-index:2;
+    }
+    .seal small{ font-family:"Cinzel", serif; font-size:.62rem; letter-spacing:.4px; display:block; opacity:.9 }
+    .seal b{ font-size:.95rem; letter-spacing:1.2px; display:block; }
+
+    /* Botones */
+    .actions{
+      position:absolute; left:0; right:0; bottom:18px;
+      display:flex; gap:10px; justify-content:center;
+      z-index:2;
+    }
+    .btn{
+      border:none; cursor:pointer; padding:10px 16px;
+      border-radius:999px; font-weight:700; letter-spacing:.4px;
+      color:white; box-shadow: 0 6px 18px rgba(0,0,0,.22);
+      transform: translateZ(0); transition: transform .15s ease, box-shadow .15s ease;
+      font-family:"Cinzel", serif; font-size:.95rem;
+    }
+    .btn:active{ transform: translateY(1px) }
+    .yes{ background: linear-gradient(180deg, #3ca844, #2e7d32); }
+    .no{ background: linear-gradient(180deg, #a23b3b, #8d2a2a); }
+
+    /* Overlay de ACEPTAR */
+    .overlay{
+      position:fixed; inset:0; display:none; place-items:center;
+      background: radial-gradient(120% 80% at 50% 30%, rgba(224,192,108,.08), transparent 60%),
+                  rgba(6,7,12,.86);
+      color:#f8efe0; text-align:center; padding:18px;
+      z-index:20;
+    }
+    .overlay.active{ display:grid; }
+    .overlay h2{
+      font-family:"Great Vibes", cursive;
+      font-size: clamp(2rem, 6vw, 3.6rem);
+      color: var(--gold);
+      text-shadow: 0 0 16px rgba(224,192,108,.35);
+      margin-bottom: 10px;
+    }
+    .overlay p{
+      font-family:"Cinzel", serif;
+      font-size: clamp(1rem, 2.4vw, 1.2rem);
+      line-height:1.7;
+      max-width: 760px;
+      opacity:.95;
+    }
+
+    .letter.small{
+    width: 280px;
+    height: 180px;       /* tamaño fijo (no min-height) */
+    min-height: 0;
+    padding: 0;
+    cursor: pointer;     /* indica que se puede reabrir */
+    }
+
+    /* Añade esto */
+    .letter.small .paper{
+    padding: 0;          /* sin padding grande del pergamino */
+    height: 100%;        /* se ajusta al contenedor pequeño */
+    }
+
+    /* Oculta el contenido interno mientras el sobre “vuela” */
+    .letter.small .header,
+    .letter.small .body,
+    .letter.small .signature,
+    .letter.small .actions,
+    .letter.small .seal{
+    display: none;
+    }
+  </style>
+</head>
+<body class="wind">
+
+  <div class="twinkle" aria-hidden="true"></div>
+
+  <div class="stage">
+    <div class="letter" id="letter">
+      <div class="paper">
+        <!-- Inicia CERRADO -->
+        <div class="flap" id="flap"></div>
+
+        <div class="header">
+          <h1>Convocatoria del Gremio de Aventureros</h1>
+          <div class="divider"></div>
+        </div>
+
+        <div class="body">
+          <p class="dropcap">
+            Bajo el amparo de dos lunas y la brisa del norte,
+            se extiende esta carta hacia ti, viajera de mis días. El Gremio
+            <strong>“Compañía de Dos Lunas”</strong> te invita a una pequeña
+            misión compartida: cruzar un puente más, aprender un hechizo nuevo de
+            risa, y explorar un mapa donde tus pasos se sienten muy cerca de los míos.
+          </p>
+          <p style="margin-top:10px">
+            Recompensas: un tesoro de momentos tranquilos, alguna que otra
+            batalla ganada a la distancia, y la promesa de escribir otra página
+            juntos. La ruta comienza hoy, y no requiere más que un sí sincero
+            y la voluntad de seguir descubriéndonos.
+          </p>
+          <p style="margin-top:10px">
+            Si aceptas, la aventura continuará en el próximo capítulo. Si decides
+            dejar pasar esta misión, el viento sabrá llevar de vuelta esta carta
+            sin rencores, como hacen los buenos relatos.
+          </p>
+        </div>
+
+        <div class="signature">
+          <div class="sig-name">Tu compañero de party</div>
+          <div class="sig-company">Compañía de Aventureros “Dos Lunas”</div>
+        </div>
+
+        <div class="seal" aria-hidden="true">
+          <small>GREMIO</small>
+          <b>2 ✦ L</b>
+          <small>OFICIAL</small>
+        </div>
+
+        <div class="actions">
+          <button class="btn yes" id="accept" aria-label="Aceptar la misión">Aceptar</button>
+          <button class="btn no" id="decline" aria-label="Declinar la misión">Declinar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mensaje romántico final -->
+  <div class="overlay" id="overlay">
+    <div>
+      <h2>Has aceptado la aventura ✨</h2>
+      <p id="finalText">
+        Gracias por decir que sí. Me encanta este viaje contigo: paso a paso,
+        risa a risa, mapa a mapa. Prometo cuidar este camino y escuchar tu voz
+        como el mejor conjuro contra cualquier monstruo cotidiano.<br><br>
+        <em>…veremos cómo continúa la aventura a la próxima.</em>
+      </p>
+    </div>
+  </div>
+
+  <script>
+    const letter = document.getElementById('letter');
+    const flap = document.getElementById('flap');
+    const acceptBtn = document.getElementById('accept');
+    const declineBtn = document.getElementById('decline');
+    const overlay = document.getElementById('overlay');
+
+    let isWindLooping = false; // estado: ¿vuela en ciclo?
+    let reopenHandlerAttached = false;
+
+    // ---------------------------
+    // Intro larga + abrir sobre
+    // ---------------------------
+    gsap.set(letter, { x: -480, y: -220, rotation: -18, scale: 0.55, opacity:0 });
+
+    const tlIntro = gsap.timeline({ defaults:{ ease:"power2.out" } });
+    tlIntro
+      .to(letter, { opacity:1, duration:0.8 })
+      .to(letter, { x:-120, y:-40, rotation:-8, scale:0.80, duration:1.8 })
+      .to(letter, { x:0, y:0, rotation:-4, scale:1.02, duration:1.6 })
+      .to(letter, { rotation:0, scale:1, duration:0.8, ease:"power1.out" })
+      .to(flap, { transformOrigin:"top", scaleY:0, duration:0.9, ease:"power2.inOut" }, ">-0.1")
+      .add(()=>floatIdle());
+
+    function floatIdle(){
+      gsap.to(letter, {
+        x: "+=8", y: "+=6", rotation: "+=0.6",
+        duration: 3.2, yoyo:true, repeat:-1, ease:"sine.inOut"
+      });
+    }
+
+    // ---------------------------
+    // ACEPTAR
+    // ---------------------------
+    acceptBtn.addEventListener('click', onAccept);
+    function onAccept(){
+      gsap.killTweensOf(letter);
+      const tl = gsap.timeline();
+      tl.to(letter, { scale:0.98, duration:.2, ease:"power1.inOut" })
+        .to(letter, { opacity:0, y:10, duration:.35, ease:"power1.in" })
+        .add(()=> {
+          overlay.classList.add('active');
+          gsap.fromTo("#finalText",
+            { opacity:0, filter:"blur(6px)" },
+            { opacity:1, filter:"blur(0px)", duration:1.1, ease:"power2.out" }
+          );
+        });
+    }
+
+    // ---------------------------
+    // DECLINAR → cerrar + vuelo al ciclo izq→der
+    // ---------------------------
+    declineBtn.addEventListener('click', onDecline);
+    function onDecline(){
+      gsap.killTweensOf(letter);
+      const tl = gsap.timeline();
+      tl.to(flap, { transformOrigin:"top", scaleY:1, duration:.45, ease:"power1.in" })
+        .to(letter, {
+          x: window.innerWidth * 0.6,
+          y: -window.innerHeight * 0.5,
+          rotation: 28,
+          scale: 0.7,
+          duration: 1.2,
+          ease: "power2.in"
+        })
+        .add(()=> startWindLoop());
+    }
+
+    function startWindLoop(){
+        isWindLooping = true;
+        letter.classList.add('small');
+
+        // Asegura que el flap esté cerrado durante el vuelo
+        gsap.set(flap, { transformOrigin: "top", scaleY: 1 });
+
+        // No usar scale pequeño; ya controlamos tamaño por CSS (.letter.small)
+        gsap.set(letter, { x: -320, y: -120, rotation: -18, scale: 1, opacity: 0.9 });
+
+        const onePass = () => {
+            gsap.to(letter, {
+            x: window.innerWidth + 320,
+            y: gsap.utils.random(-160, -40),
+            rotation: gsap.utils.random(-10, 24),
+            duration: gsap.utils.random(5.5, 7.5),
+            ease: "sine.inOut",
+            onComplete: () => {
+                gsap.set(letter, { x: -320, y: gsap.utils.random(-160, -40) });
+                onePass();
+            }
+            });
+        };
+        onePass();
+
+        if (!reopenHandlerAttached) {
+            letter.addEventListener('click', tryReopenFromWind);
+            reopenHandlerAttached = true;
+        }
+        }
+
+    function tryReopenFromWind(){
+      if (!isWindLooping) return;
+      reopenFromWind();
+    }
+
+    // Reabrir: detener vuelo, volver al centro y abrir el sobre
+    function reopenFromWind(){
+        isWindLooping = false;
+        gsap.killTweensOf(letter);
+
+        const tl = gsap.timeline({ defaults:{ ease:"power2.out" } });
+        tl.to(letter, { x:0, y:0, rotation:-4, scale:0.9, duration:1.0 })
+            .add(()=> letter.classList.remove('small'))     // <- vuelve a tamaño/contenido normal
+            .to(letter, { rotation:0, scale:1, duration:0.5, ease:"power1.out" })
+            .to(flap, { transformOrigin:"top", scaleY:0, duration:0.7, ease:"power2.inOut" }, ">-0.15")
+            .add(()=> floatIdle());
+    }
+
+    // Resize: no es crítico recalcular nada porque el loop se resetea en cada pasada
+    window.addEventListener('resize', ()=>{});
+  </script>
+</body>
+</html>
