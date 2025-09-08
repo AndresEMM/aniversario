@@ -63,7 +63,7 @@
       to{ opacity:.75; transform:translateY(-2px) }
     }
 
-    /* Contenedor carta */
+    /* Escenario */
     .stage{
       position:fixed; left:50%; top:50%;
       transform: translate(-50%,-50%);
@@ -84,7 +84,8 @@
     /* Papel pergamino */
     .paper{
       position:relative; border-radius:12px;
-      padding:24px 22px 88px;
+      /* MÁS espacio inferior para separar botones de la firma */
+      padding:24px 22px 140px;
       background:
         radial-gradient(1200px 800px at 20% 0%, rgba(255,255,255,.35), transparent 50%),
         radial-gradient(1200px 800px at 90% 20%, rgba(255,255,255,.18), transparent 60%),
@@ -93,22 +94,30 @@
         inset 0 0 0 2px rgba(0,0,0,.06),
         inset 0 0 70px rgba(122,92,46,.15);
       border: 1px solid rgba(0,0,0,.1);
+      overflow:hidden;
     }
 
-    /* “Cierre” (flap) para simular que se cierra antes de volar */
+    /* FLAP del sobre: AHORA INICIA CERRADO (scaleY:1) */
     .flap{
       position:absolute; inset:0; border-radius:12px;
       background: linear-gradient(180deg, #eee0bf 0%, #e8d7ae 100%);
       border:1px solid rgba(0,0,0,.12);
       box-shadow: inset 0 -30px 60px rgba(0,0,0,.12);
-      transform-origin: top; transform: scaleY(0);
+      transform-origin: top; transform: scaleY(1);
       z-index:3;
+    }
+    /* Detalle triangular sutil de “tapa” del sobre */
+    .flap::after{
+      content:"";
+      position:absolute; left:50%; top:8px; width:72%; height:52%;
+      transform: translateX(-50%);
+      background: linear-gradient(180deg, rgba(0,0,0,.08), transparent);
+      clip-path: polygon(50% 0%, 100% 70%, 0% 70%);
+      opacity:.35; pointer-events:none;
     }
 
     /* Cabecera y firma */
-    .header{
-      text-align:center; margin-bottom:12px;
-    }
+    .header{text-align:center; margin-bottom:12px;}
     .header h1{
       font-family:"Cinzel", serif; letter-spacing:.5px;
       font-size: clamp(1.2rem, 2.4vw, 1.6rem);
@@ -131,8 +140,9 @@
       padding: 0 .12em 0 0; color:#3a2b18;
     }
 
+    /* SUBIMOS LA FIRMA para no chocar con botones */
     .signature{
-      position:absolute; left:24px; bottom:16px; right:120px;
+      position:absolute; left:24px; bottom:88px; right:120px;
       display:flex; flex-direction:column; gap:4px;
       color:#3a2b18;
     }
@@ -156,14 +166,16 @@
       display:grid; place-items:center; color:#f9d9d9;
       text-align:center; padding:8px;
       transform: rotate(-7deg);
+      z-index:2;
     }
     .seal small{ font-family:"Cinzel", serif; font-size:.62rem; letter-spacing:.4px; display:block; opacity:.9 }
     .seal b{ font-size:.95rem; letter-spacing:1.2px; display:block; }
 
     /* Botones */
     .actions{
-      position:absolute; left:0; right:0; bottom:14px;
+      position:absolute; left:0; right:0; bottom:18px;
       display:flex; gap:10px; justify-content:center;
+      z-index:2;
     }
     .btn{
       border:none; cursor:pointer; padding:10px 16px;
@@ -205,10 +217,6 @@
       width: 260px; min-height: 180px;
       padding:0;
     }
-
-    /* Selección de texto deshabilitada en carta */
-    .paper, .actions, .signature, .seal{ user-select:none }
-
   </style>
 </head>
 <body class="wind">
@@ -218,6 +226,7 @@
   <div class="stage">
     <div class="letter" id="letter">
       <div class="paper">
+        <!-- AHORA el sobre inicia CERRADO -->
         <div class="flap" id="flap"></div>
 
         <div class="header">
@@ -279,19 +288,31 @@
   </div>
 
   <script>
-    // ---------------------------
-    // Animación de entrada
-    // ---------------------------
     const letter = document.getElementById('letter');
     const flap = document.getElementById('flap');
-    const tlIntro = gsap.timeline({ defaults:{ ease:"power2.out" } });
+    const acceptBtn = document.getElementById('accept');
+    const declineBtn = document.getElementById('decline');
+    const overlay = document.getElementById('overlay');
 
-    // Llega con el viento, se acerca y “flota” levemente
-    gsap.set(letter, { x: -280, y: -180, rotation: -12, scale: 0.7, opacity:0 });
+    // ---------------------------
+    // Animación de entrada: MÁS LARGA + abre el sobre al final
+    // ---------------------------
+    // Comienza más lejos y pequeño, simulando vuelo largo
+    gsap.set(letter, { x: -480, y: -220, rotation: -18, scale: 0.55, opacity:0 });
+
+    const tlIntro = gsap.timeline({ defaults:{ ease:"power2.out" } });
     tlIntro
-      .to(letter, { opacity:1, duration:.4 })
-      .to(letter, { x:0, y:0, rotation:-3, scale:1, duration:1.2 })
-      .to(letter, { rotation:0, duration:.6, ease:"sine.out" }, "-=0.2")
+      // aparece a lo lejos
+      .to(letter, { opacity:1, duration:0.8 })
+      // se acerca un tramo
+      .to(letter, { x:-120, y:-40, rotation:-8, scale:0.80, duration:1.8 })
+      // se acerca casi al centro
+      .to(letter, { x:0, y:0, rotation:-4, scale:1.02, duration:1.6 })
+      // acomoda
+      .to(letter, { rotation:0, scale:1, duration:0.8, ease:"power1.out" })
+      // ABRE el sobre (flap se repliega)
+      .to(flap, { transformOrigin:"top", scaleY:0, duration:0.9, ease:"power2.inOut" }, ">-0.1")
+      // flote suave
       .add(()=>floatIdle());
 
     function floatIdle(){
@@ -302,16 +323,9 @@
     }
 
     // ---------------------------
-    // Botones
+    // ACEPTAR: mensaje romántico
     // ---------------------------
-    const acceptBtn = document.getElementById('accept');
-    const declineBtn = document.getElementById('decline');
-    const overlay = document.getElementById('overlay');
-
     acceptBtn.addEventListener('click', onAccept);
-    declineBtn.addEventListener('click', onDecline);
-
-    // ACEPTAR: mostrar overlay con mensaje romántico
     function onAccept(){
       gsap.killTweensOf(letter);
       const tl = gsap.timeline();
@@ -326,13 +340,16 @@
         });
     }
 
-    // DECLINAR: se “cierra” y el viento se la lleva
+    // ---------------------------
+    // DECLINAR: cerrar y volar con el viento
+    // ---------------------------
+    declineBtn.addEventListener('click', onDecline);
     function onDecline(){
       gsap.killTweensOf(letter);
 
       const tl = gsap.timeline();
-      // Cierra la carta (flap cubre)
-      tl.to(flap, { transformOrigin:"top", scaleY:1, duration:.35, ease:"power1.in" })
+      // Cierra la carta (flap cubre de nuevo)
+      tl.to(flap, { transformOrigin:"top", scaleY:1, duration:.45, ease:"power1.in" })
         // Sale volando con el viento
         .to(letter, {
           x: window.innerWidth * 0.6,
@@ -345,14 +362,11 @@
         .add(()=> windLoop());
     }
 
-    // Bucle de “volar con el viento” ya cerrada y más pequeña
+    // Vuelo continuo tras declinar
     function windLoop(){
       letter.classList.add('small');
-
-      // Coloca la carta pequeña entrando desde la izquierda superior
       gsap.set(letter, { x: -320, y: -120, rotation: -18, scale: 0.55, opacity: 0.9 });
 
-      // Repite el vuelo de izquierda a derecha, con un poco de vaivén
       const onePass = ()=>{
         gsap.to(letter, {
           x: window.innerWidth + 320,
@@ -361,7 +375,6 @@
           duration: gsap.utils.random(5.5, 7.5),
           ease: "sine.inOut",
           onComplete: ()=>{
-            // Reinicia al lado izquierdo y repite para siempre
             gsap.set(letter, { x: -320, y: gsap.utils.random(-160, -40) });
             onePass();
           }
@@ -370,10 +383,8 @@
       onePass();
     }
 
-    // Ajustar ruta si cambia el tamaño de la ventana
-    window.addEventListener('resize', ()=>{
-      // No interrumpimos; los valores se recalcularán en próximos loops
-    });
+    // (Opcional) manejar resize si quisieras recalcular algo; aquí no hace falta.
+    window.addEventListener('resize', ()=>{});
   </script>
 </body>
 </html>
