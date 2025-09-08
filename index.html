@@ -211,11 +211,27 @@
       opacity:.95;
     }
 
-    /* Versión pequeña (vuelo continuo tras Declinar) */
     .letter.small{
-      width: 260px; min-height: 180px;
-      padding:0;
-      cursor: pointer; /* Indica que se puede reabrir */
+    width: 280px;
+    height: 180px;       /* tamaño fijo (no min-height) */
+    min-height: 0;
+    padding: 0;
+    cursor: pointer;     /* indica que se puede reabrir */
+    }
+
+    /* Añade esto */
+    .letter.small .paper{
+    padding: 0;          /* sin padding grande del pergamino */
+    height: 100%;        /* se ajusta al contenedor pequeño */
+    }
+
+    /* Oculta el contenido interno mientras el sobre “vuela” */
+    .letter.small .header,
+    .letter.small .body,
+    .letter.small .signature,
+    .letter.small .actions,
+    .letter.small .seal{
+    display: none;
     }
   </style>
 </head>
@@ -346,7 +362,7 @@
       tl.to(flap, { transformOrigin:"top", scaleY:1, duration:.45, ease:"power1.in" })
         .to(letter, {
           x: window.innerWidth * 0.6,
-          y: -window.innerHeight * 0.2,
+          y: -window.innerHeight * 0.5,
           rotation: 28,
           scale: 0.7,
           duration: 1.2,
@@ -356,32 +372,35 @@
     }
 
     function startWindLoop(){
-      isWindLooping = true;
-      letter.classList.add('small');
-      gsap.set(letter, { x: -320, y: -120, rotation: -18, scale: 0.55, opacity: 0.9 });
+        isWindLooping = true;
+        letter.classList.add('small');
 
-      const onePass = ()=>{
-        gsap.to(letter, {
-          x: window.innerWidth + 320,
-          y: gsap.utils.random(-160, -40),
-          rotation: gsap.utils.random(-10, 24),
-          duration: gsap.utils.random(5.5, 7.5),
-          ease: "sine.inOut",
-          onComplete: ()=>{
-            // reaparece por la izquierda
-            gsap.set(letter, { x: -320, y: gsap.utils.random(-160, -40) });
-            onePass();
-          }
-        });
-      };
-      onePass();
+        // Asegura que el flap esté cerrado durante el vuelo
+        gsap.set(flap, { transformOrigin: "top", scaleY: 1 });
 
-      // Permitir reabrir al clic mientras vuela
-      if (!reopenHandlerAttached) {
-        letter.addEventListener('click', tryReopenFromWind);
-        reopenHandlerAttached = true;
-      }
-    }
+        // No usar scale pequeño; ya controlamos tamaño por CSS (.letter.small)
+        gsap.set(letter, { x: -320, y: -120, rotation: -18, scale: 1, opacity: 0.9 });
+
+        const onePass = () => {
+            gsap.to(letter, {
+            x: window.innerWidth + 320,
+            y: gsap.utils.random(-160, -40),
+            rotation: gsap.utils.random(-10, 24),
+            duration: gsap.utils.random(5.5, 7.5),
+            ease: "sine.inOut",
+            onComplete: () => {
+                gsap.set(letter, { x: -320, y: gsap.utils.random(-160, -40) });
+                onePass();
+            }
+            });
+        };
+        onePass();
+
+        if (!reopenHandlerAttached) {
+            letter.addEventListener('click', tryReopenFromWind);
+            reopenHandlerAttached = true;
+        }
+        }
 
     function tryReopenFromWind(){
       if (!isWindLooping) return;
@@ -390,19 +409,15 @@
 
     // Reabrir: detener vuelo, volver al centro y abrir el sobre
     function reopenFromWind(){
-      isWindLooping = false;
-      gsap.killTweensOf(letter); // detener animación actual del loop
+        isWindLooping = false;
+        gsap.killTweensOf(letter);
 
-      const tl = gsap.timeline({ defaults:{ ease:"power2.out" } });
-      // Mantenerlo pequeño mientras se acerca al centro
-      tl.to(letter, { x:0, y:0, rotation:-4, scale:0.35, duration:2.2 })
-        // Restaurar tamaño normal (quita clase pequeña)
-        .add(()=> letter.classList.remove('small'))
-        .to(letter, { rotation:0, scale:1, duration:0.5, ease:"power1.out" })
-        // Abrir el sobre si estuviera cerrado
-        .to(flap, { transformOrigin:"top", scaleY:0, duration:0.7, ease:"power2.inOut" }, ">-0.15")
-        // Volver al “flote” suave
-        .add(()=> floatIdle());
+        const tl = gsap.timeline({ defaults:{ ease:"power2.out" } });
+        tl.to(letter, { x:0, y:0, rotation:-4, scale:0.9, duration:1.0 })
+            .add(()=> letter.classList.remove('small'))     // <- vuelve a tamaño/contenido normal
+            .to(letter, { rotation:0, scale:1, duration:0.5, ease:"power1.out" })
+            .to(flap, { transformOrigin:"top", scaleY:0, duration:0.7, ease:"power2.inOut" }, ">-0.15")
+            .add(()=> floatIdle());
     }
 
     // Resize: no es crítico recalcular nada porque el loop se resetea en cada pasada
