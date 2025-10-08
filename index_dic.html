@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Nuestra Tarjeta Navideña ✨</title>
+
+<!-- Partículas (nieve) -->
+<script src="https://cdn.jsdelivr.net/npm/tsparticles@2.8.0/tsparticles.bundle.min.js"></script>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&family=Great+Vibes&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  --bg:#0b1420;
+  --bg2:#0f2322;
+  --card:#ffffff12;
+  --card-br:#ffffff33;
+  --ink:#f9fbff;
+  --muted:#cfe6ff;
+  --green:#0f5e3b;
+  --red:#b80f2f;
+  --gold:#f2cb05;
+  --shadow: 0 25px 60px rgba(0,0,0,.45);
+}
+
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  background:
+    radial-gradient(120% 80% at 70% 0%, #173159 0%, transparent 60%),
+    radial-gradient(90% 60% at 10% 100%, #0f2322 0%, transparent 60%),
+    linear-gradient(180deg, var(--bg), var(--bg2));
+  color:var(--ink);
+  font-family:"Poppins", system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif;
+  overflow:hidden;
+}
+
+/* Nieve de fondo */
+#snow{position:fixed; inset:0; z-index:-1}
+
+/* Sobre inicial */
+.stage{position:fixed; inset:0; display:grid; place-items:center; padding:16px}
+.envelope{
+  width:min(900px, 92vw);
+  height:min(560px, 70vh);
+  position:relative;
+  perspective:1400px;
+  filter: drop-shadow(0 25px 40px rgba(0,0,0,.45));
+}
+.env-body{
+  position:absolute; inset:0; border-radius:18px;
+  background: linear-gradient(180deg, #e7f0ff, #c6d8ff);
+  border:1px solid #ffffff55;
+}
+.env-flap{
+  position:absolute; left:0; right:0; top:0; height:60%;
+  transform-origin: top; transform: rotateX(0deg);
+  border-radius:18px 18px 0 0;
+  background: linear-gradient(180deg, #f4fbff, #d7e9ff);
+  border:1px solid #ffffff77;
+  border-bottom:none;
+  backface-visibility: hidden;
+}
+.env-flap::after{
+  /* triangulito */
+  content:""; position:absolute; inset:0;
+  background:
+    linear-gradient(180deg, rgba(0,0,0,.06), transparent 70%);
+  clip-path: polygon(50% 0%, 100% 100%, 0% 100%);
+}
+.env-stamp{
+  position:absolute; right:18px; bottom:18px;
+  width:82px; height:82px; border-radius:50%;
+  background: radial-gradient(circle at 35% 35%, #ff9aa2 0%, #cc1d37 60%, #8a0f22 100%);
+  box-shadow: inset 0 0 16px rgba(0,0,0,.35), 0 10px 24px rgba(0,0,0,.35);
+  display:grid; place-items:center; color:#ffe4e8; font-weight:700;
+  letter-spacing:.8px; transform: rotate(-10deg);
+}
+.env-text{
+  position:absolute; inset:auto 0 16px 0; text-align:center; font-weight:700; color:#123;
+}
+
+/* Tarjeta/libro paginado */
+.card{
+  width:min(900px, 92vw);
+  height:min(560px, 70vh);
+  border-radius:22px;
+  background: linear-gradient(180deg, #ffffff22, #ffffff12);
+  border:1px solid var(--card-br);
+  backdrop-filter: blur(10px);
+  box-shadow: var(--shadow);
+  padding:14px 14px 64px;
+  position:relative;
+  opacity:0; transform: translateY(8px) scale(.985);
+}
+
+.header{
+  text-align:center; margin-bottom:8px;
+}
+.header h1{
+  font-family:"Great Vibes", cursive; font-weight:400;
+  font-size: clamp(1.8rem, 5vw, 3rem);
+  color:#fff7d9; text-shadow:0 0 16px rgba(242,203,5,.28);
+}
+.header .sub{opacity:.9}
+
+/* Página */
+.page{
+  display:flex; gap:16px; align-items:stretch;
+  height: calc(100% - 110px); /* deja espacio a header y nav */
+}
+.col{
+  flex:1; border-radius:14px; overflow:hidden; position:relative;
+  box-shadow: inset 0 0 0 1px #ffffff28, inset 0 0 60px rgba(255,255,255,.06);
+  background: #ffffff0d;
+}
+.text{
+  padding:18px; display:flex; align-items:center; justify-content:center; text-align:center;
+}
+.text p{
+  font-size: clamp(1rem, 2.4vw, 1.15rem);
+  line-height:1.8; color:var(--muted);
+}
+.image{
+  display:grid; place-items:center;
+}
+.image img{
+  width:100%; height:100%; object-fit:cover;
+  filter: contrast(1.05) saturate(1.08);
+}
+
+/* Alterna lados en páginas pares (>=768px) */
+@media (min-width: 768px){
+  .page.reverse{ flex-direction: row-reverse; }
+}
+/* En móvil apila vertical */
+@media (max-width: 767px){
+  .page{ flex-direction: column; }
+}
+
+/* Navegación */
+.nav{
+  position:absolute; left:0; right:0; bottom:12px;
+  display:flex; gap:10px; justify-content:center; align-items:center;
+}
+.btn{
+  border:none; cursor:pointer; padding:10px 16px; border-radius:999px;
+  font-weight:700; letter-spacing:.3px;
+  box-shadow: 0 8px 20px rgba(0,0,0,.18);
+  transition: transform .15s ease, box-shadow .15s ease, filter .15s ease;
+}
+.btn:hover{ transform: translateY(-1px); filter: brightness(1.05) }
+.prev{ background:#ffffff; color:#0b1420 }
+.next{ background: linear-gradient(180deg, #e53939, #b80f2f); color:#fff }
+.page-ind{ font-weight:700; opacity:.9 }
+
+/* Canvas para estallidos de regalos */
+#burst{
+  position:fixed; inset:0; pointer-events:none; z-index:3;
+}
+
+/* Cursor sutil */
+.pointer{
+  position:fixed; width:18px; height:18px; border:2px solid #fff; border-radius:50%;
+  transform:translate(-50%,-50%); pointer-events:none; z-index:4; opacity:.7; mix-blend-mode:screen;
+}
+</style>
+</head>
+<body>
+
+<canvas id="burst"></canvas>
+<div id="snow"></div>
+<div class="pointer" id="pointer"></div>
+
+<div class="stage">
+  <!-- SOBRE -->
+  <div class="envelope" id="envelope" aria-label="Sobre navideño">
+    <div class="env-body"></div>
+    <div class="env-flap" id="flap"></div>
+    <div class="env-stamp"><div>NOEL</div></div>
+    <div class="env-text">Se abre en 1s…</div>
+  </div>
+
+  <!-- TARJETA -->
+  <div class="card" id="card" aria-live="polite">
+    <div class="header">
+      <h1>Nuestra Tarjeta Navideña</h1>
+      <div class="sub">Con cariño — siempre cerquita, sin importar el mapa ✨</div>
+    </div>
+
+    <div class="page" id="page">
+      <div class="col text"><p id="txt"></p></div>
+      <div class="col image">
+        <!-- ⚠️ Reemplaza las rutas /assets/*.jpg con tus propias imágenes -->
+        <img id="img" alt="Imagen de la página"/>
+      </div>
+    </div>
+
+    <div class="nav" id="nav">
+      <button class="btn prev" id="prev">← Anterior</button>
+      <span class="page-ind" id="ind">1 / 5</span>
+      <button class="btn next" id="next">Siguiente →</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* =============================
+   Datos de páginas (edita aquí)
+   ============================= */
+const PAGES = [
+  {
+    text: `Hola, Marce 💫
+Te quiero y te aprecio mucho. Estás en mis pensamientos todos los días.`,
+    img: "img/navidad1.jpg"
+  },
+  {
+    text: `A veces me pregunto: “¿qué haría Marce?” cuando necesito otra perspectiva.
+Y la *Sincro* aparece: pensamientos, emociones, sentir… y nos entendemos jsjs.`,
+    img: "img/navidad2.jpg"
+  },
+  {
+    text: `Este año pasaron muchas cosas para los dos.
+Aunque no estuvimos juntos físicamente, me gustó compartir tus victorias
+y también acompañarte en las rachas difíciles (y tú a mí).`,
+    img: "img/navidad3.webp"
+  },
+  {
+    text: `Aunque a veces no quieras verlo: eres poderosa, hábil, inalcanzable
+y de una belleza inigualable. De verdad.`,
+    img: "img/navidad4.png"
+  },
+  {
+    text: `Gracias por todo lo que hemos construido.
+Sigo aquí, cerquita, con ganas de seguir sumando momentos contigo. ✨`,
+    img: "img/navidad5.jpg"
+  }
+];
+
+/* =============================
+   Apertura del sobre → tarjeta
+   ============================= */
+const envelope = document.getElementById('envelope');
+const flap = document.getElementById('flap');
+const card = document.getElementById('card');
+
+function openEnvelope(){
+  // Levanta la solapa
+  flap.style.transition = "transform 1s cubic-bezier(.2,.7,.2,1)";
+  flap.style.transform = "rotateX(-170deg)";
+
+  // Desvanece el sobre y muestra la tarjeta
+  setTimeout(()=>{
+    envelope.style.transition = "opacity .5s ease, transform .6s ease";
+    envelope.style.opacity = 0; envelope.style.transform = "translateY(-6px)";
+  }, 750);
+
+  setTimeout(()=>{
+    envelope.style.display = "none";
+    // Mostrar tarjeta
+    card.style.transition = "transform .7s cubic-bezier(.2,.7,.2,1), opacity .7s ease";
+    card.style.opacity = 1; card.style.transform = "translateY(0) scale(1)";
+  }, 1250);
+}
+setTimeout(openEnvelope, 1000);
+
+/* =============================
+   Paginación
+   ============================= */
+const txt = document.getElementById('txt');
+const img = document.getElementById('img');
+const page = document.getElementById('page');
+const ind = document.getElementById('ind');
+const prev = document.getElementById('prev');
+const next = document.getElementById('next');
+
+let i = 0;
+function render(){
+  const data = PAGES[i];
+  txt.textContent = data.text;
+  img.src = data.img;
+  img.alt = "Página navideña " + (i+1);
+  ind.textContent = `${i+1} / ${PAGES.length}`;
+
+  // Alterna lados en desktop (móvil apila)
+  if((i % 2) === 1){ page.classList.add('reverse'); } else { page.classList.remove('reverse'); }
+
+  // pequeña animación de transición
+  page.style.opacity = 0; page.style.transform = "translateY(6px)";
+  requestAnimationFrame(()=>{
+    page.style.transition = "opacity .35s ease, transform .35s ease";
+    page.style.opacity = 1; page.style.transform = "translateY(0)";
+  });
+}
+render();
+
+prev.addEventListener('click', e=>{
+  e.stopPropagation();
+  i = (i - 1 + PAGES.length) % PAGES.length;
+  render();
+});
+next.addEventListener('click', e=>{
+  e.stopPropagation();
+  i = (i + 1) % PAGES.length;
+  render();
+});
+
+/* =============================
+   Nieve cayendo (tsParticles)
+   ============================= */
+tsParticles.load("snow", {
+  fpsLimit: 60,
+  background: { color: "transparent" },
+  particles: {
+    number: { value: 80 },
+    move: { enable: true, speed: 0.6, direction: "bottom", straight: false, outModes: { default:"out" } },
+    opacity: { value: {min:.35, max:.85} },
+    size: { value: { min: 2, max: 4.8 } },
+    shape: { type: "char", character: { value: ["❄","✦","✼","✻"], font:"serif", weight:"400", fill:true } },
+    color: { value: ["#ffffff","#e7f2ff","#cde6ff"] },
+    wobble: { enable:true, distance: 6, speed: 0.5 }
+  },
+  interactivity: { events: {} }
+});
+
+const canvas = document.getElementById('burst');
+const ctx = canvas.getContext('2d');
+let W = canvas.width = innerWidth;
+let H = canvas.height = innerHeight;
+addEventListener('resize', ()=>{ W=canvas.width=innerWidth; H=canvas.height=innerHeight; });
+
+const GIFT_EMOJIS = ["🎁","🎄","✨","⭐","🕯️","🦌"];
+
+const particles = [];
+function addBurst(x,y,qty=22){
+  for(let k=0;k<qty;k++){
+    const angle = Math.random()*Math.PI*2;
+    const speed = 2 + Math.random()*3.5;
+    particles.push({
+      x, y,
+      vx: Math.cos(angle)*speed,
+      vy: Math.sin(angle)*speed - 1.2,
+      g: 0.06 + Math.random()*0.04,
+      life: 60 + Math.random()*20,
+      size: 18 + Math.random()*10,
+      emoji: GIFT_EMOJIS[Math.floor(Math.random()*GIFT_EMOJIS.length)],
+      rot: Math.random()*Math.PI,
+      vr: (Math.random()-.5)*0.15
+      // , sprite: spriteImgs.length? spriteImgs[Math.floor(Math.random()*spriteImgs.length)] : null
+    });
+  }
+}
+
+function tick(){
+  ctx.clearRect(0,0,W,H);
+  for(let p=particles.length-1; p>=0; p--){
+    const o = particles[p];
+    o.life--; if(o.life<=0){ particles.splice(p,1); continue; }
+    o.vy += o.g; o.x += o.vx; o.y += o.vy; o.rot += o.vr;
+
+    ctx.save();
+    ctx.translate(o.x, o.y);
+    ctx.rotate(o.rot);
+
+    // Dibuja emoji (o sprite si activas sprites)
+    if(/*o.sprite*/ false){
+      // ctx.drawImage(o.sprite, -o.size/2, -o.size/2, o.size, o.size);
+    }else{
+      ctx.font = `${o.size}px serif`;
+      ctx.textAlign="center"; ctx.textBaseline="middle";
+      ctx.fillText(o.emoji, 0, 0);
+    }
+    ctx.restore();
+  }
+  requestAnimationFrame(tick);
+}
+tick();
+
+/* Clic en cualquier parte que NO sea botón → regalos */
+document.addEventListener('click', (e)=>{
+  const isButton = e.target.closest('.nav') || e.target.classList.contains('btn');
+  if(isButton) return;
+  addBurst(e.clientX, e.clientY, 8);
+});
+
+/* Cursor sutil */
+const pointer = document.getElementById('pointer');
+document.addEventListener('mousemove', e=>{
+  pointer.style.transform = `translate(${e.clientX}px, ${e.clientY}px)`;
+});
+</script>
+</body>
+</html>
