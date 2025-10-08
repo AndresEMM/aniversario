@@ -3,261 +3,187 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Camino de medianoche</title>
+<title>Bruja en Camino – personaje mejorado</title>
 <style>
   :root{
-    --skyTop:#0b1022;
-    --skyMid:#131a38;
-    --skyBot:#171b2a;
-    --moon:#f1f3f6;
-    --mount:#1c213b;
-    --forest:#0e1326;
-    --path:#3b2d1f;
-    --pathEdge:#2b221a;
-    --grass:#0b0f1c;
-    --witch:#0a0a0e;
-    --firefly:#ffd36b;
-    --fog:#c7d2fe22;
-    --halo:#ffefc1;
+    --skyTop:#0b1022; --skyBot:#171b2a;
+    --witch-dark:#0a0a0e;
+    --witch-mid:#141421;
+    --witch-accent:#28283a;  /* sutiles relieves dentro de la silueta */
+    --ribbon:#6b5cff;        /* cinta del sombrero */
+    --metal:#b7b7c7;         /* hebillas/puntas (muy tenue) */
   }
   *{box-sizing:border-box;margin:0;padding:0}
-  html,body{height:100%;overflow:hidden;background:linear-gradient(180deg,var(--skyTop),var(--skyMid) 55%,var(--skyBot))}
-  body{font-family: system-ui, Segoe UI, sans-serif;color:#e6e6f0}
+  html,body{height:100%;overflow:hidden;background:linear-gradient(180deg,var(--skyTop) 0%,var(--skyBot) 100%)}
+  .stage{position:fixed;inset:0;display:grid;place-items:end center;padding-bottom:10vh}
 
-  /* Escena */
-  .scene{position:relative;width:100%;height:100%}
-  .layer{position:absolute;inset:0;pointer-events:none}
+  /* ===== Animaciones del personaje ===== */
+  .witch{filter:drop-shadow(0 12px 22px rgba(0,0,0,.55))}
+  .witch.walk{animation:bob 1.8s ease-in-out infinite}
+  @keyframes bob{0%,100%{transform:translate(-50%,0)}50%{transform:translate(-50%,-5px)}}
 
-  /* Cielo: estrellas */
-  .stars{background:
-    radial-gradient(1px 1px at 15% 20%, #fff8 50%, transparent 52%),
-    radial-gradient(1px 1px at 40% 10%, #fff6 50%, transparent 52%),
-    radial-gradient(1px 1px at 70% 25%, #fffc 50%, transparent 52%),
-    radial-gradient(1px 1px at 85% 38%, #fff7 50%, transparent 52%),
-    radial-gradient(1px 1px at 30% 60%, #fff6 50%, transparent 52%),
-    radial-gradient(1px 1px at 60% 70%, #fff7 50%, transparent 52%),
-    radial-gradient(1px 1px at 80% 80%, #fff5 50%, transparent 52%)
-  }
-  @keyframes twinkle{0%,100%{opacity:.9}50%{opacity:.6}}
-  .stars{animation: twinkle 6s ease-in-out infinite}
+  /* Sombrero: leve vaivén */
+  .hat{transform-origin: 120px 70px; animation:hatWobble 2.6s ease-in-out infinite}
+  @keyframes hatWobble{0%,100%{transform:rotate(0deg)}50%{transform:rotate(-3.2deg)}}
 
-  /* Luna */
-  .moon{
-    position:absolute;top:6vh;left:8vw;width:110px;height:110px;border-radius:50%;
-    background:radial-gradient(120px 100px at 35% 35%, var(--moon),#e4e7ee 50%, #cfd3de 65%, #a8afc0 85%, #7f879c);
-    box-shadow:0 0 35px 6px #e9eef777;
-    filter:contrast(1.05) brightness(1.03)
-  }
+  /* Mechones: más vivos que la capa */
+  .hairL{transform-origin: 104px 98px; animation:hairSway 2.4s ease-in-out infinite}
+  .hairR{transform-origin: 126px 98px; animation:hairSway 2.2s ease-in-out .15s infinite}
+  @keyframes hairSway{0%,100%{transform:skewX(0deg)}50%{transform:skewX(-6deg)}}
 
-  /* Capas de fondo */
-  .mountains svg,.forest svg{width:120%;height:100%;position:absolute;left:-10%}
-  .mountains path{fill:var(--mount)}
-  .forest path{fill:var(--forest)}
-  @keyframes driftSlow{from{transform:translateX(0)}to{transform:translateX(-6%)}}
-  @keyframes driftMid {from{transform:translateX(0)}to{transform:translateX(-12%)}}
-  .mountains{animation: driftSlow 30s linear infinite alternate}
-  .forest{animation: driftMid 18s linear infinite alternate}
+  /* Capa: ondulación amplia y lenta */
+  .cape{transform-origin: 95px 138px; animation:capeFlutter 3.4s ease-in-out infinite}
+  @keyframes capeFlutter{0%,100%{transform:skewX(0) translateY(0)}50%{transform:skewX(-5deg) translateY(-2px)}}
 
-  /* Sendero y bordes (parallax más rápido) */
-  .ground{position:absolute;inset:0;display:flex;align-items:flex-end}
-  .path{
-    position:relative;margin:0 auto;width:56vw;max-width:900px;min-width:320px;height:60vh;
-    background:linear-gradient(180deg, #4a3a29 0%, var(--path) 50%, #20170f 100%);
-    clip-path:polygon(50% 0%, 70% 10%, 82% 20%, 88% 32%, 92% 45%, 95% 60%, 97% 75%, 98% 88%, 99% 100%,
-                      1% 100%, 2% 88%, 3% 75%, 5% 60%, 8% 45%, 12% 32%, 18% 20%, 30% 10%);
-    border-left:6px solid var(--pathEdge);border-right:6px solid var(--pathEdge);
-    animation: pathFlow 6s linear infinite
-  }
-  @keyframes pathFlow{
-    0%{filter:brightness(1)}50%{filter:brightness(1.03)}100%{filter:brightness(1)}
-  }
+  /* Falda: respiración/pliegues */
+  .skirt{transform-origin: 116px 180px; animation:skirtBreath 2.2s ease-in-out infinite}
+  @keyframes skirtBreath{0%,100%{transform:skewX(0)}50%{transform:skewX(-2.8deg)}}
 
-  .grass{
-    position:absolute;inset:auto 0 0 0;height:18vh;background:
-      repeating-linear-gradient(0deg, transparent 0 10px, #0000 10px 20px),
-      radial-gradient(60px 8px at 10% 80%, #0f1628 40%, transparent 50%),
-      radial-gradient(60px 8px at 30% 85%, #0c1221 40%, transparent 50%),
-      radial-gradient(60px 8px at 55% 78%, #0f1628 40%, transparent 50%),
-      radial-gradient(60px 8px at 75% 86%, #0c1221 40%, transparent 50%),
-      linear-gradient(180deg, var(--grass), #060913);
-    z-index:3;
-    overflow:hidden
-  }
-  .grass::before,.grass::after{
-    content:"";position:absolute;inset:0;background:
-      repeating-linear-gradient(90deg, #0e1425 0 22px, #0b1120 22px 44px);
-    opacity:.08;animation: slideGrass 5s linear infinite
-  }
-  .grass::after{animation-duration:8s;opacity:.05}
-  @keyframes slideGrass{from{transform:translateX(0)}to{transform:translateX(-80px)}}
-
-  /* Niebla baja */
-  .fog{position:absolute;inset:auto 0 12vh 0;height:28vh;z-index:2;overflow:hidden}
-  .fog::before,.fog::after{
-    content:"";position:absolute;left:-30%;right:-30%;top:10%;
-    height:110%;background:radial-gradient(40% 60% at 50% 50%, var(--fog), transparent 70%);
-    animation: fogMove 24s linear infinite
-  }
-  .fog::after{animation-duration:34s;top:0%}
-  @keyframes fogMove{from{transform:translateX(0)}to{transform:translateX(20%)}}
-
-  /* Luciérnagas */
-  .fireflies{pointer-events:none}
-  .fly{position:absolute;width:4px;height:4px;border-radius:50%;background:var(--firefly);
-       box-shadow:0 0 6px 2px var(--firefly);opacity:.85;filter:saturate(1.1)}
-  @keyframes fire{0%,100%{transform:translate(0,0)}25%{transform:translate(10px,-8px)}50%{transform:translate(-4px,-2px)}75%{transform:translate(6px,10px)}}
-  @keyframes glow{0%,100%{opacity:.9}50%{opacity:.4}}
-
-  /* Bruja (SVG silueta) */
-  .witch{
-    position:absolute;left:50%;bottom:19vh;transform:translateX(-50%);
-    width:min(22vw, 220px);z-index:4;pointer-events:none
-  }
-  .walk{animation: bob 1.6s ease-in-out infinite}
-  @keyframes bob{0%,100%{transform:translate(-50%,0)}50%{transform:translate(-50%,-4px)}}
-  .cape{transform-origin: 50% 20%;animation: flutter 2.8s ease-in-out infinite}
-  @keyframes flutter{0%,100%{transform:skewX(0)}50%{transform:skewX(-5deg)}}
-
-  /* Linterna (halo que sigue al cursor, clic para activar) */
-  .halo{
-    position:fixed;inset:0;pointer-events:none;opacity:0;transition:opacity .25s ease;mix-blend-mode:screen
-  }
-  .halo.active{opacity:1}
-  .halo::before{
-    content:"";position:absolute;left:var(--x,50%);top:var(--y,60%);
-    transform:translate(-50%,-50%);
-    width:36vmax;height:36vmax;border-radius:50%;
-    background:radial-gradient(closest-side, var(--halo) 0%, #ffe9a000 60%);
-    filter:blur(1px) brightness(1.05);
-  }
-
-  /* Texto opcional */
-  .caption{
-    position:absolute;bottom:3vh;width:100%;text-align:center;font-size:clamp(.9rem,1.8vw,1.1rem);
-    color:#cbd5ffcc;letter-spacing:.3px
-  }
-
-  /* Botón linterna */
-  .toggle{
-    position:fixed;right:14px;top:14px;z-index:10;border:1px solid #ffffff22;border-radius:999px;
-    background:#0b1022aa;color:#fff;padding:.5rem .8rem;font-weight:600;backdrop-filter:blur(6px);
-    cursor:pointer
-  }
-  .toggle:active{transform:translateY(1px)}
+  /* Paso alterno y braceo sutil */
+  .legL{animation:step 1.8s ease-in-out infinite}
+  .legR{animation:step 1.8s ease-in-out .9s infinite}
+  @keyframes step{0%,100%{transform:translateY(0)}50%{transform:translateY(3px)}}
+  .armL{animation:swing 1.8s ease-in-out .2s infinite}
+  .armR{animation:swing 1.8s ease-in-out .9s infinite}
+  @keyframes swing{0%,100%{transform:rotate(0)}50%{transform:rotate(-3deg)}}
 </style>
 </head>
 <body>
-<button class="toggle" id="toggle">Linterna: Apagar/Encender</button>
+<div class="stage">
+  <!-- Puedes cambiar width para ajustar tamaño del personaje en tu escena -->
+  <svg class="witch walk" viewBox="0 0 240 280" width="220" style="transform:translateX(-50%); position:relative; left:50%;">
+    <defs>
+      <!-- Degradé muy leve para realzar planos dentro de la silueta -->
+      <linearGradient id="gMid" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="var(--witch-mid)" stop-opacity=".95"/>
+        <stop offset="100%" stop-color="var(--witch-dark)" stop-opacity="1"/>
+      </linearGradient>
+      <linearGradient id="gAccent" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="var(--witch-accent)" stop-opacity=".9"/>
+        <stop offset="100%" stop-color="var(--witch-dark)" stop-opacity="1"/>
+      </linearGradient>
+    </defs>
 
-<div class="scene">
-  <div class="layer stars"></div>
-  <div class="layer moon"></div>
+    <!-- ===== Sombrero (copas, ala y cinta) ===== -->
+    <g class="hat">
+      <!-- Ala ancha -->
+      <path d="M50 90 Q120 70 190 88 Q170 96 50 94 Z"
+            fill="var(--witch-dark)"/>
+      <!-- Copa curva -->
+      <path d="M120 50 Q112 60 110 78 Q108 90 120 100 Q148 108 170 100 Q164 88 164 70 Q165 56 170 44 Q152 48 120 50 Z"
+            fill="url(#gMid)"/>
+      <!-- Punta torcida -->
+      <path d="M170 44 Q180 32 186 26 Q190 22 192 18 Q188 18 184 19 Q172 22 168 28 Q166 34 170 44 Z"
+            fill="var(--witch-dark)"/>
+      <!-- Cinta -->
+      <path d="M108 84 Q144 86 170 82 Q170 88 164 92 Q140 96 110 92 Z"
+            fill="var(--ribbon)" opacity=".7"/>
+      <!-- Broche sutil -->
+      <circle cx="158" cy="86" r="3.6" fill="var(--metal)" opacity=".28"/>
+    </g>
 
-  <!-- Montañas -->
-  <div class="layer mountains" aria-hidden="true">
-    <svg viewBox="0 0 1200 600" preserveAspectRatio="none">
-      <path d="M0,420 L120,360 240,410 360,300 480,380 600,320 720,360 840,290 960,350 1080,310 1200,360 1200,600 0,600 Z"/>
-    </svg>
-  </div>
+    <!-- ===== Cabello (mechones) ===== -->
+    <g class="hairL">
+      <path d="M102 96 Q90 118 92 132 Q96 146 110 154 Q114 138 112 120 Q110 108 102 96 Z"
+            fill="url(#gAccent)"/>
+    </g>
+    <g class="hairR">
+      <path d="M130 96 Q142 118 140 134 Q136 148 120 156 Q118 138 120 120 Q122 108 130 96 Z"
+            fill="url(#gAccent)"/>
+    </g>
 
-  <!-- Bosque -->
-  <div class="layer forest" aria-hidden="true">
-    <svg viewBox="0 0 1200 600" preserveAspectRatio="none">
-      <path d="M0,470 
-               C60,430 80,430 120,470
-               C160,430 180,430 220,470
-               C260,430 280,430 320,470
-               C360,430 380,430 420,470
-               C460,430 480,430 520,470
-               C560,430 580,430 620,470
-               C660,430 680,430 720,470
-               C760,430 780,430 820,470
-               C860,430 880,430 920,470
-               C960,430 980,430 1020,470
-               C1060,430 1080,430 1120,470
-               L1200,600 0,600 Z"/>
-    </svg>
-  </div>
+    <!-- ===== Cabeza/nuca (oval oculta por sombrero y cabello) ===== -->
+    <ellipse cx="118" cy="96" rx="12" ry="10" fill="var(--witch-dark)"/>
 
-  <!-- Niebla baja -->
-  <div class="layer fog"></div>
+    <!-- ===== Capa (gran masa con borde inferior irregular) ===== -->
+    <g class="cape">
+      <path d="M92 120 
+               Q70 142 58 170 
+               Q54 180 58 188 
+               Q74 184 90 190 
+               Q100 192 112 196 
+               Q126 200 146 202 
+               Q170 204 184 206 
+               Q176 196 170 180 
+               Q162 160 150 140 
+               Q136 124 118 120 Z"
+            fill="url(#gMid)"/>
+      <!-- Borde resaltado muy sutil -->
+      <path d="M92 120 Q70 142 58 170"
+            stroke="var(--witch-accent)" stroke-opacity=".25" stroke-width="2" fill="none"/>
+    </g>
 
-  <!-- Sendero y hierba -->
-  <div class="layer ground">
-    <div class="path"></div>
-    <div class="grass"></div>
-  </div>
+    <!-- ===== Torso/corsé (espalda) ===== -->
+    <g>
+      <!-- Silueta del torso -->
+      <path d="M100 118 L136 118 Q146 138 146 154 Q146 164 140 170 Q132 176 118 176 Q104 176 96 170 Q90 164 90 154 Q90 138 100 118 Z"
+            fill="url(#gMid)"/>
+      <!-- Listones del corsé (ligeramente claros para leer el “espalda”) -->
+      <path d="M100 136 Q118 142 136 136" stroke="#3a3a4f" stroke-opacity=".6" stroke-width="2" fill="none"/>
+      <path d="M98 144 Q118 150 138 144" stroke="#3a3a4f" stroke-opacity=".55" stroke-width="2" fill="none"/>
+      <path d="M96 152 Q118 158 140 152" stroke="#3a3a4f" stroke-opacity=".5" stroke-width="2" fill="none"/>
+    </g>
 
-  <!-- Bruja (silueta) -->
-  <svg class="witch walk" viewBox="0 0 200 260" aria-label="Chica bruja caminando">
-    <!-- Sombrero -->
-    <path d="M110 62 Q90 56 60 60 Q100 50 126 36 Q128 45 125 55 Q140 62 160 66 Q128 68 110 62 Z" fill="var(--witch)"/>
-    <!-- Cabeza -->
-    <circle cx="115" cy="78" r="16" fill="var(--witch)"/>
-    <!-- Cabello/velo -->
-    <path d="M98 88 Q92 110 96 126 Q104 134 120 134 Q125 118 124 98 Z" fill="var(--witch)"/>
-    <!-- Cuerpo/vestido -->
-    <path d="M92 130 L138 130 L160 210 Q122 228 78 210 Z" fill="var(--witch)"/>
-    <!-- Capa -->
-    <path class="cape" d="M92 130 Q70 150 54 182 Q70 178 92 186 Q82 166 92 130 Z" fill="var(--witch)"/>
-    <!-- Brazos (sutil) -->
-    <path d="M138 130 Q150 150 152 170" stroke="var(--witch)" stroke-width="10" stroke-linecap="round"/>
-    <path d="M92 130 Q80 150 78 170" stroke="var(--witch)" stroke-width="10" stroke-linecap="round"/>
-    <!-- Piernas (silueta simple) -->
-    <path d="M108 210 Q110 235 110 252" stroke="var(--witch)" stroke-width="12" stroke-linecap="round"/>
-    <path d="M132 210 Q134 235 134 252" stroke="var(--witch)" stroke-width="12" stroke-linecap="round"/>
+    <!-- ===== Falda con pliegues ===== -->
+    <g class="skirt">
+      <path d="M86 168 
+               Q96 176 118 178 Q140 176 150 168 
+               L170 220 Q140 234 118 234 Q96 234 66 220 Z"
+            fill="url(#gMid)"/>
+      <!-- Pliegues sugeridos -->
+      <path d="M96 172 L92 218" stroke="var(--witch-accent)" stroke-opacity=".35" stroke-width="2"/>
+      <path d="M112 174 L110 228" stroke="var(--witch-accent)" stroke-opacity=".35" stroke-width="2"/>
+      <path d="M126 174 L128 228" stroke="var(--witch-accent)" stroke-opacity=".35" stroke-width="2"/>
+      <path d="M142 172 L146 218" stroke="var(--witch-accent)" stroke-opacity=".35" stroke-width="2"/>
+      <!-- Borde inferior remarcado -->
+      <path d="M66 220 Q96 234 118 234 Q140 234 170 220"
+            stroke="var(--witch-accent)" stroke-opacity=".28" stroke-width="2" fill="none"/>
+    </g>
+
+    <!-- ===== Brazos ===== -->
+    <g class="armL" transform="translate(-2,0)">
+      <path d="M98 128 Q88 146 86 164" stroke="var(--witch-dark)" stroke-width="10" stroke-linecap="round"/>
+    </g>
+    <g class="armR" transform="translate(2,0)">
+      <path d="M140 128 Q150 146 152 164" stroke="var(--witch-dark)" stroke-width="10" stroke-linecap="round"/>
+    </g>
+
+    <!-- ===== Bolso lateral (para silueta narrativa) ===== -->
+    <g>
+      <path d="M148 164 Q154 170 154 182 Q154 194 142 198 Q132 200 126 194 Q124 188 126 180 Q130 170 138 166 Z"
+            fill="var(--witch-dark)"/>
+      <path d="M136 164 L150 170" stroke="var(--witch-accent)" stroke-opacity=".4" stroke-width="2"/>
+      <circle cx="145" cy="188" r="2.3" fill="var(--metal)" opacity=".3"/>
+    </g>
+
+    <!-- ===== Escoba al hombro (icónica y leíble en back view) ===== -->
+    <g>
+      <!-- Palo -->
+      <path d="M56 138 L128 156" stroke="var(--witch-dark)" stroke-width="6" stroke-linecap="round"/>
+      <!-- Cerdas -->
+      <path d="M52 132 
+               q-10 16 0 30 
+               q18 16 30 6 
+               q10 -10 0 -26 
+               q-14 -12 -30 -10 Z"
+            fill="var(--witch-dark)"/>
+      <!-- Atado claro -->
+      <path d="M62 138 L66 150" stroke="var(--witch-accent)" stroke-opacity=".45" stroke-width="3"/>
+      <!-- Punta metálica sutil -->
+      <circle cx="128" cy="156" r="2.4" fill="var(--metal)" opacity=".35"/>
+    </g>
+
+    <!-- ===== Piernas / Polainas / Botas ===== -->
+    <g class="legL">
+      <path d="M106 214 Q106 238 106 252" stroke="var(--witch-dark)" stroke-width="12" stroke-linecap="round"/>
+      <path d="M100 252 Q110 258 124 258 Q118 252 106 252 Z" fill="var(--witch-dark)"/>
+    </g>
+    <g class="legR">
+      <path d="M130 214 Q130 238 130 252" stroke="var(--witch-dark)" stroke-width="12" stroke-linecap="round"/>
+      <path d="M124 252 Q136 258 146 258 Q140 252 130 252 Z" fill="var(--witch-dark)"/>
+    </g>
+
   </svg>
-
-  <!-- Luciérnagas -->
-  <div class="layer fireflies" id="flies"></div>
-
-  <!-- Halo de linterna -->
-  <div class="halo" id="halo"></div>
-
-  <div class="caption">“Entre pinos y estrellas, seguimos el mismo camino.”</div>
 </div>
-
-<script>
-  // Luciérnagas aleatorias
-  const flies = document.getElementById('flies');
-  const COUNT = 22;
-  for(let i=0;i<COUNT;i++){
-    const d = document.createElement('div');
-    d.className = 'fly';
-    const x = Math.random()*100, y = 40 + Math.random()*55;
-    d.style.left = x + 'vw';
-    d.style.top  = y + 'vh';
-    d.style.animation = `fire ${6+Math.random()*6}s ease-in-out ${Math.random()*2}s infinite, glow ${2+Math.random()*2}s ease-in-out ${Math.random()}s infinite`;
-    flies.appendChild(d);
-  }
-
-  // Linterna: seguir cursor / toque
-  const halo = document.getElementById('halo');
-  const toggle = document.getElementById('toggle');
-  let on = false;
-  function setPos(e){
-    if(!on) return;
-    const p = e.touches ? e.touches[0] : e;
-    halo.style.setProperty('--x', p.clientX + 'px');
-    halo.style.setProperty('--y', p.clientY + 'px');
-  }
-  ['mousemove','touchmove'].forEach(ev=>window.addEventListener(ev,setPos,{passive:true}));
-  toggle.addEventListener('click', ()=>{ on = !on; halo.classList.toggle('active', on); });
-
-  // Pequeño parallax al mover (suave)
-  let targetX = 0, targetY = 0, cx=0, cy=0;
-  window.addEventListener('mousemove', (e)=>{
-    targetX = (e.clientX / innerWidth - .5);
-    targetY = (e.clientY / innerHeight - .5);
-  });
-  function parallax(){
-    cx += (targetX - cx)*0.04;
-    cy += (targetY - cy)*0.04;
-    document.querySelector('.mountains').style.transform = `translate(${cx*10}px, ${cy*4}px)`;
-    document.querySelector('.forest').style.transform = `translate(${cx*18}px, ${cy*6}px)`;
-    requestAnimationFrame(parallax);
-  }
-  parallax();
-</script>
 </body>
 </html>
