@@ -16,14 +16,22 @@
 
 <style>
 :root{
-  --paper-base:#f2e9d0;
-  --paper-top:#f9f3e2;
-  --ink:#2b2419;
-  --gold:#e0c06c;
+  /* Paleta con más contraste */
+  --paper-base:#efe3c2;   /* + contraste */
+  --paper-top:#fdf6dc;
+  --ink:#1f160f;
+  --gold:#caa23f;
   --pin:#b5179e;
-  --pin-muted:#5e5a69;
-  --route:#5a4226;
-  --halo:#ffdd88;
+  --pin-muted:#6c6674;
+  --route:#6b3e1e;        /* más oscuro */
+  --halo:#ffd973;
+  --decor-stroke:#3a2c20; /* contornos de íconos */
+  --water:#8ec5ff;
+  --ruin:#7f6a56;
+  --forest:#2e7d32;
+  --rock:#58524a;
+  --castle:#3b4a74;
+  --objective:#b21e35;
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%}
@@ -38,13 +46,13 @@ body{
 .bg{
   position:fixed; inset:0; z-index:-3;
   background:
-    radial-gradient(120% 100% at 50% 15%, rgba(255,255,255,.25), transparent 60%),
+    radial-gradient(120% 100% at 50% 15%, rgba(255,255,255,.22), transparent 60%),
     linear-gradient(180deg, var(--paper-top), var(--paper-base));
 }
 .vignette{
   position:fixed; inset:0; z-index:-2; pointer-events:none;
   background:
-    radial-gradient(80% 60% at 50% 40%, transparent 0%, rgba(0,0,0,.18) 70%, rgba(0,0,0,.4) 100%);
+    radial-gradient(80% 60% at 50% 40%, transparent 0%, rgba(0,0,0,.16) 70%, rgba(0,0,0,.35) 100%);
 }
 #tsparticles{position:fixed; inset:0; z-index:-1}
 
@@ -57,13 +65,12 @@ h1{
   font-family:"Great Vibes", cursive;
   font-size:clamp(1.8rem, 3.6vw, 3rem);
   color:var(--gold);
-  text-shadow:0 0 16px rgba(224,192,108,.35);
+  text-shadow:0 0 16px rgba(202,162,63,.35);
   padding:4px 10px;
 }
-.sub{
-  margin-top:4px; font-size:.95rem; opacity:.85;
-}
+.sub{ margin-top:4px; font-size:.95rem; opacity:.9; }
 
+/* Controles */
 .controls{
   position:fixed; top:12px; right:12px; display:flex; gap:8px;
 }
@@ -72,10 +79,10 @@ h1{
   font-weight:700; letter-spacing:.4px; color:#1a140e; background: #f0e3c3;
   box-shadow:0 6px 18px rgba(0,0,0,.18);
 }
-.btn:hover{ filter:brightness(1.04) }
+.btn:hover{ filter:brightness(1.05) }
 .progress{
   position:fixed; bottom:12px; left:50%; transform:translateX(-50%);
-  background:#f0e6cc; padding:6px 12px; border-radius:999px; box-shadow:0 6px 18px rgba(0,0,0,.18);
+  background:#ecd9a6; padding:6px 12px; border-radius:999px; box-shadow:0 6px 18px rgba(0,0,0,.18);
   font-weight:700;
 }
 
@@ -86,28 +93,28 @@ h1{
 .map{
   width:min(1100px, 92vw);
   max-height:78vh;
-  aspect-ratio: 12 / 7; /* mantiene proporción del viewBox */
+  aspect-ratio: 12 / 7;
   border-radius:16px;
-  box-shadow:inset 0 0 0 2px rgba(0,0,0,.06), inset 0 0 60px rgba(122,92,46,.15);
+  box-shadow:inset 0 0 0 2px rgba(0,0,0,.08), inset 0 0 60px rgba(122,92,46,.18);
   background:
-    radial-gradient(140% 90% at 50% 10%, rgba(255,255,255,.18), transparent 60%),
-    repeating-linear-gradient(25deg, rgba(0,0,0,.025) 0 12px, transparent 12px 24px);
+    radial-gradient(140% 90% at 50% 10%, rgba(255,255,255,.16), transparent 60%),
+    repeating-linear-gradient(25deg, rgba(0,0,0,.03) 0 10px, transparent 10px 20px);
 }
 
 /* Ruta */
-.route{ fill:none; stroke:var(--route); stroke-width:6; stroke-linecap:round; opacity:.85 }
+.route{ fill:none; stroke:var(--route); stroke-width:6; stroke-linecap:round; opacity:.95 }
 
 /* Pines */
 .pin{ cursor:default }
 .pin circle.main{
-  fill:white; stroke:var(--pin-muted); stroke-width:3;
+  fill:#fff; stroke:var(--pin-muted); stroke-width:3;
 }
 .pin circle.ring{
-  fill:none; stroke:var(--pin-muted); stroke-width:2; opacity:.65;
+  fill:none; stroke:var(--pin-muted); stroke-width:2; opacity:.75;
 }
 .pin text{
-  font-size:20px; font-weight:700; fill:var(--ink);
-  text-shadow:0 2px 0 rgba(255,255,255,.5);
+  font-size:20px; font-weight:800; fill:var(--ink);
+  paint-order: stroke fill; stroke:#ffffff; stroke-width:3px; /* contorno blanco para legibilidad */
 }
 .pin.active circle.main{
   stroke:var(--pin); filter: drop-shadow(0 0 10px rgba(181,23,158,.55));
@@ -116,14 +123,20 @@ h1{
   stroke:var(--halo); animation: pulse 1.6s ease-in-out infinite;
 }
 .pin.done circle.main{ stroke:#2e7d32 }
-.pin.done circle.ring{ stroke:#9ee3a0; opacity:.8 }
+.pin.done circle.ring{ stroke:#9ee3a0; opacity:.9 }
+@keyframes pulse{ 0%,100%{ stroke-width:2; opacity:.7 } 50%{ stroke-width:5; opacity:1 } }
 
-@keyframes pulse{
-  0%,100%{ stroke-width:2; opacity:.6 }
-  50%{ stroke-width:5; opacity:1 }
-}
+.lock{ pointer-events:none; opacity:.72 }
 
-.lock{ pointer-events:none; opacity:.65 }
+/* Iconos / Decor */
+.decor *{ vector-effect: non-scaling-stroke }
+.mountain{ fill:#bfb8ab; stroke:var(--decor-stroke); stroke-width:2; }
+.tree{ fill:#3d8b40; stroke:#1f5a23; stroke-width:2; }
+.tree-trunk{ stroke:#604f3b; stroke-width:3; }
+.ruin{ fill:#b9a894; stroke:var(--decor-stroke); stroke-width:2; }
+.castle{ fill:#9aa7cc; stroke:#2d395a; stroke-width:2; }
+.lake{ fill:var(--water); stroke:#396a9e; stroke-width:3; opacity:.92; }
+.objective{ stroke:var(--objective); stroke-width:10; stroke-linecap:round; }
 
 /* Modal evento */
 .modal{
@@ -134,26 +147,20 @@ h1{
 .modal.active{ display:grid }
 .card{
   width:min(640px, 92vw);
-  background: radial-gradient(120% 90% at 20% 0%, rgba(224,192,108,.12), transparent 60%),
-              linear-gradient(180deg, #faf2da, #f1e5c7);
+  background: radial-gradient(120% 90% at 20% 0%, rgba(202,162,63,.12), transparent 60%),
+              linear-gradient(180deg, #fff8e5, #f2e3c4);
   border:1px solid rgba(0,0,0,.1); border-radius:18px; padding:16px 18px;
   box-shadow: 0 20px 60px rgba(0,0,0,.35);
 }
-.card h2{
-  font-size:1.3rem; margin-bottom:6px; color:#3a2b18;
-}
-.card p{
-  font-size:1.05rem; line-height:1.6; color:#2b2419;
-}
-.card .foot{
-  display:flex; gap:8px; justify-content:flex-end; margin-top:12px;
-}
-.card .foot .btn{ background:#e9dbb7 }
+.card h2{ font-size:1.3rem; margin-bottom:6px; color:#3a2b18; }
+.card p{ font-size:1.05rem; line-height:1.6; color:#2b2419; }
+.card .foot{ display:flex; gap:8px; justify-content:flex-end; margin-top:12px; }
+.card .foot .btn{ background:#ead89f }
 
-/* Final overlay */
+/* Final */
 #final{
   position:fixed; inset:0; display:none; place-items:center;
-  background: radial-gradient(120% 80% at 50% 30%, rgba(224,192,108,.08), transparent 60%),
+  background: radial-gradient(120% 80% at 50% 30%, rgba(202,162,63,.08), transparent 60%),
               rgba(6,7,12,.86);
   color:#f8efe0; text-align:center; padding:18px; z-index:12;
 }
@@ -162,14 +169,12 @@ h1{
   font-family:"Great Vibes", cursive;
   font-size: clamp(2rem, 6vw, 3.6rem);
   color: var(--gold);
-  text-shadow: 0 0 16px rgba(224,192,108,.35);
+  text-shadow: 0 0 16px rgba(202,162,63,.35);
   margin-bottom: 10px;
 }
-#final p{
-  font-size:clamp(1rem,2.4vw,1.2rem); line-height:1.7; max-width:760px; margin:0 auto;
-}
+#final p{ font-size:clamp(1rem,2.4vw,1.2rem); line-height:1.7; max-width:760px; margin:0 auto; }
 
-/* Accesibilidad en teclado */
+/* Accesibilidad teclado */
 .pin[tabindex="0"]:focus circle.main{ outline: none; stroke:#000; stroke-width:3 }
 </style>
 </head>
@@ -181,7 +186,7 @@ h1{
 
 <header>
   <h1>Mapa de la Aventura — Dos Lunas</h1>
-  <div class="sub">Haz clic en el <strong>pin brillante</strong> para avanzar</div>
+  <div class="sub">Toca el <strong>pin brillante</strong> para avanzar por la ruta</div>
 </header>
 
 <div class="controls">
@@ -191,21 +196,78 @@ h1{
 <div class="map-wrap">
   <!-- SVG Mapa -->
   <svg class="map" viewBox="0 0 1200 700" role="img" aria-label="Mapa de aventura">
-    <!-- (Opcional) decoración tenue -->
-    <g opacity=".12">
-      <path d="M70,500 Q200,360 360,440 T650,360 T980,280" fill="none" stroke="#000" stroke-width="40" />
-      <circle cx="1020" cy="460" r="120" fill="#000"/>
-      <path d="M850,160 l40,-80 l40,80 z" fill="#000"/>
-      <path d="M220,200 l30,-60 l30,60 z" fill="#000"/>
+    <!-- DECORACIÓN: zonas del mapa -->
+    <g class="decor" aria-hidden="true">
+      <!-- Lago cerca de la Bahía -->
+      <path class="lake" d="M980,460
+                            C1000,430 1060,430 1088,450
+                            C1110,470 1100,505 1060,520
+                            C1020,535 990,520 970,500
+                            C960,490 965,475 980,460 Z"/>
+
+      <!-- Zona rocosa entre Posada y Bosque (montañas) -->
+      <g opacity="0.95">
+        <polygon class="mountain" points="250,470 290,410 330,470"/>
+        <polygon class="mountain" points="300,490 350,420 400,490"/>
+        <polygon class="mountain" points="210,500 250,440 290,500"/>
+      </g>
+
+      <!-- Bosque susurrante (árboles) -->
+      <g>
+        <!-- grupo de arbolitos cerca del Bosque -->
+        <g transform="translate(330,380)">
+          <polygon class="tree" points="0,0 20,-36 40,0"/>
+          <line class="tree-trunk" x1="20" y1="0" x2="20" y2="12"/>
+        </g>
+        <g transform="translate(370,400)">
+          <polygon class="tree" points="0,0 20,-36 40,0"/>
+          <line class="tree-trunk" x1="20" y1="0" x2="20" y2="12"/>
+        </g>
+        <g transform="translate(410,380)">
+          <polygon class="tree" points="0,0 20,-36 40,0"/>
+          <line class="tree-trunk" x1="20" y1="0" x2="20" y2="12"/>
+        </g>
+        <g transform="translate(350,360)">
+          <polygon class="tree" points="0,0 18,-30 36,0"/>
+          <line class="tree-trunk" x1="18" y1="0" x2="18" y2="10"/>
+        </g>
+      </g>
+
+      <!-- Ruinas (columnas rotas) cerca del Puente -->
+      <g transform="translate(560,320)">
+        <rect class="ruin" x="-40" y="0" width="10" height="40" rx="2"/>
+        <rect class="ruin" x="-15" y="-10" width="10" height="50" rx="2"/>
+        <rect class="ruin" x="10" y="5" width="10" height="35" rx="2"/>
+        <line x1="-45" y1="0" x2="25" y2="0" stroke="var(--decor-stroke)" stroke-width="3"/>
+        <line x1="-45" y1="-12" x2="25" y2="-12" stroke="var(--decor-stroke)" stroke-width="3" stroke-dasharray="6 6"/>
+      </g>
+
+      <!-- Castillo junto a la Torre -->
+      <g transform="translate(820,160)">
+        <!-- base -->
+        <rect class="castle" x="-45" y="10" width="90" height="50" rx="2"/>
+        <!-- almenas -->
+        <rect class="castle" x="-45" y="0" width="15" height="12"/>
+        <rect class="castle" x="-25" y="0" width="15" height="12"/>
+        <rect class="castle" x="-5"  y="0" width="15" height="12"/>
+        <rect class="castle" x="15"  y="0" width="15" height="12"/>
+        <rect class="castle" x="35"  y="0" width="15" height="12"/>
+        <!-- puerta -->
+        <rect x="-8" y="34" width="16" height="26" rx="3" fill="#2d395a" stroke="#1c243d" stroke-width="2"/>
+      </g>
+
+      <!-- X del objetivo final en la Bahía -->
+      <g transform="translate(1040,420)">
+        <line class="objective" x1="-18" y1="-18" x2="18" y2="18"/>
+        <line class="objective" x1="-18" y1="18" x2="18" y2="-18"/>
+      </g>
     </g>
 
     <!-- Rutas: se crean por JS (segmentos dibujados) -->
     <g id="routes"></g>
 
     <!-- Pines -->
-    <g id="pins">
-      <!-- Se posicionan por JS; este g sólo sirve de contenedor -->
-    </g>
+    <g id="pins"></g>
   </svg>
 </div>
 
@@ -243,17 +305,16 @@ tsParticles.load("tsparticles", {
   fpsLimit: 60,
   background: { color: "transparent" },
   particles: {
-    number: { value: 60 },
-    move: { enable: true, speed: 0.4, direction: "none", outModes: { default:"out" } },
-    opacity: { value: {min:.4, max:.9} },
-    size: { value: { min: 1.5, max: 3.5 } },
-    color: { value: ["#ffd166","#fff4b0","#ffe07a"] },
-    twinkle: { particles: { enable: true, frequency: 0.05, opacity: 1 } },
+    number: { value: 40 }, /* menos para no tapar */
+    move: { enable: true, speed: 0.35, outModes: { default:"out" } },
+    opacity: { value: {min:.35, max:.8} },
+    size: { value: { min: 1.5, max: 3.2 } },
+    color: { value: ["#ffe08c","#fff1b3","#ffd76b"] },
     shape: { type: "circle" }
   },
   interactivity: {
     events: { onHover: { enable: true, mode: "attract" } },
-    modes: { attract: { distance: 120, duration: 0.2, factor: 1.2 } }
+    modes: { attract: { distance: 120, duration: 0.2, factor: 1.1 } }
   }
 });
 
@@ -315,13 +376,11 @@ function createPins(){
     g.setAttribute("transform", `translate(${s.x},${s.y})`);
     g.setAttribute("data-index", i);
     g.setAttribute("tabindex","0");
-    // anillo
+
     const ring = document.createElementNS("http://www.w3.org/2000/svg","circle");
     ring.setAttribute("r","18"); ring.setAttribute("class","ring");
-    // cuerpo
     const c = document.createElementNS("http://www.w3.org/2000/svg","circle");
     c.setAttribute("r","12"); c.setAttribute("class","main");
-    // etiqueta
     const t = document.createElementNS("http://www.w3.org/2000/svg","text");
     t.setAttribute("x","0"); t.setAttribute("y","-24");
     t.setAttribute("text-anchor","middle");
@@ -334,17 +393,12 @@ function createPins(){
 }
 
 function curvePath(x1,y1,x2,y2){
-  // curva suave: control en el punto medio con desplazamiento
-  const mx = (x1+x2)/2;
-  const my = (y1+y2)/2;
-  const dx = x2 - x1;
-  const dy = y2 - y1;
-  // Desplaza el control perpendicular a la recta para darle curvita
+  const mx = (x1+x2)/2, my = (y1+y2)/2;
+  const dx = x2 - x1, dy = y2 - y1;
   const len = Math.hypot(dx,dy) || 1;
   const nx = -dy/len, ny = dx/len;
-  const bend = 60; // curvatura
-  const cx = mx + nx * bend;
-  const cy = my + ny * bend;
+  const bend = 60;
+  const cx = mx + nx * bend, cy = my + ny * bend;
   return `M ${x1} ${y1} Q ${cx} ${cy} ${x2} ${y2}`;
 }
 
@@ -354,7 +408,6 @@ function createRoutes(){
     const p = document.createElementNS("http://www.w3.org/2000/svg","path");
     p.setAttribute("d", curvePath(a.x, a.y, b.x, b.y));
     p.setAttribute("class","route");
-    // preparar para animación de “dibujo”
     const len = p.getTotalLength();
     p.style.strokeDasharray = len;
     p.style.strokeDashoffset = len;
@@ -381,7 +434,6 @@ function openEvent(index){
   evtTitle.textContent = `${s.title} — ${s.label}`;
   evtText.textContent = s.text;
   modal.classList.add("active");
-  // pequeña entrada
   gsap.fromTo(".card",{opacity:0, y:10, scale:.98},{opacity:1, y:0, scale:1, duration:.35, ease:"power2.out"});
 }
 
@@ -409,7 +461,7 @@ function burstConfetti(){
 function onPinClick(e){
   const g = e.currentTarget;
   const i = +g.getAttribute("data-index");
-  if(i !== current) return; // sólo el activo
+  if(i !== current) return;
   openEvent(i);
 }
 function onPinKey(e){
@@ -420,17 +472,13 @@ function onPinKey(e){
 
 function nextStep(){
   closeEvent();
-  // marcar como hecho, dibujar tramo y activar siguiente
   drawNextSegment(current).then(()=>{
     burstConfetti();
     current += 1;
     if(current < STOPS.length){
       setActivePin(current);
     }else{
-      // fin
-      document.querySelectorAll(".route").forEach(r=>r.style.opacity=1);
       finalOverlay.classList.add("active");
-      // confetti un poquito más
       setTimeout(()=>confetti({ particleCount: 180, spread: 80, origin: { y: .7 } }), 200);
     }
   });
@@ -438,7 +486,6 @@ function nextStep(){
 
 function resetAll(){
   current = 0;
-  // reset rutas
   segments.forEach(p=>{
     const len = p.getTotalLength();
     p.style.strokeDasharray = len;
@@ -455,19 +502,15 @@ createPins();
 createRoutes();
 setActivePin(0);
 
-// Listeners
 pinNodes.forEach(g=>{
   g.addEventListener("click", onPinClick);
   g.addEventListener("keydown", onPinKey);
 });
 
-btnClose.addEventListener("click", closeEvent);
-btnCont.addEventListener("click", nextStep);
-btnReset.addEventListener("click", resetAll);
-
-// Accesibilidad: cerrar modal clic fuera
-modal.addEventListener("click", (e)=>{ if(e.target===modal) closeEvent(); });
-
+document.getElementById("close").addEventListener("click", closeEvent);
+document.getElementById("continuar").addEventListener("click", nextStep);
+document.getElementById("reset").addEventListener("click", resetAll);
+document.getElementById("modal").addEventListener("click", (e)=>{ if(e.target.id==="modal") closeEvent(); });
 </script>
 </body>
 </html>
