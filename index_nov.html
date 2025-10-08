@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Para ti ✨</title>
+
+<!-- Librerías -->
+<script src="https://cdn.jsdelivr.net/npm/tsparticles@2.8.0/tsparticles.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/typed.js@2.0.12"></script>
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&family=Great+Vibes&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  --bg1:#0f1020;
+  --bg2:#1a1440;
+  --glass:#ffffff1a;
+  --glass-br:#ffffff3a;
+  --accent:#ff6584;
+  --accent2:#6ee7f3;
+  --ink:#f8f8f8;
+  --soft:#e9efff;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  background: radial-gradient(120% 80% at 70% 0%, #2b1a59 0%, transparent 60%),
+              radial-gradient(90% 70% at 20% 100%, #0d2a4d 0%, transparent 60%),
+              linear-gradient(180deg, var(--bg1), var(--bg2));
+  color:var(--ink);
+  font-family:"Poppins", system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif;
+  overflow:hidden;
+}
+
+/* Aurora suave */
+.aurora::before,
+.aurora::after{
+  content:""; position:fixed; inset:-20%;
+  background:
+    radial-gradient(50% 30% at 30% 10%, rgba(110,231,243,.25), transparent 70%),
+    radial-gradient(40% 30% at 70% 25%, rgba(255,101,132,.22), transparent 70%),
+    radial-gradient(45% 30% at 50% 70%, rgba(255,255,255,.08), transparent 70%);
+  filter: blur(30px);
+  animation: drift 16s ease-in-out infinite alternate;
+  pointer-events:none; z-index:-1;
+}
+.aurora::after{ animation-duration: 22s; opacity:.8; }
+@keyframes drift{ from{ transform:translateY(-2%) } to{ transform:translateY(2%) } }
+
+/* Partículas */
+#tsparticles{ position:fixed; inset:0; z-index:-1; }
+
+/* Contenido */
+.wrap{
+  position:fixed; inset:0;
+  display:grid; place-items:center;
+  padding:20px;
+}
+
+/* Carta de cristal */
+.card{
+  width:min(880px, 92vw);
+  border-radius:22px;
+  background: linear-gradient(180deg, #ffffff20, #ffffff12);
+  border:1px solid var(--glass-br);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 20px 60px rgba(0,0,0,.35), inset 0 0 60px rgba(255,255,255,.06);
+  padding:22px 22px 16px;
+  transform: translateY(8px) scale(.98);
+  opacity:0;
+}
+.header{
+  display:flex; align-items:center; justify-content:center; gap:10px; margin-bottom:6px;
+}
+.logo-heart{
+  width:36px; height:36px; border-radius:50%;
+  background: radial-gradient(circle at 35% 35%, #ff9ab0 0%, #ff6584 45%, #b6032f 100%);
+  box-shadow: 0 0 18px rgba(255,101,132,.45);
+  display:grid; place-items:center; font-size:18px;
+}
+.title{
+  font-family:"Great Vibes", cursive; font-weight:400;
+  font-size: clamp(1.8rem, 5vw, 3rem);
+  color: var(--soft);
+  text-shadow: 0 0 14px rgba(255,255,255,.25);
+}
+
+/* Mensaje */
+.msg{
+  margin:10px auto 12px;
+  max-width: 680px;
+  font-size: clamp(1rem, 2.6vw, 1.2rem);
+  line-height:1.7; text-align:center;
+  color:#f5f7ff;
+  min-height: 7.5em; /* evitar salto al escribir */
+}
+.cursor{
+  display:inline-block; width:1ch; text-align:left;
+  color:#fff; opacity:.8; animation: blink 1s steps(1) infinite;
+}
+@keyframes blink{ 50%{ opacity:.1 } }
+
+/* Botones */
+.actions{
+  display:flex; justify-content:center; gap:10px; margin-bottom:10px;
+}
+.btn{
+  border:none; border-radius:999px; padding:10px 16px; font-weight:700;
+  letter-spacing:.3px; color:#0f1020; background:#fefefe;
+  box-shadow: 0 8px 20px rgba(0,0,0,.18);
+  cursor:pointer; transition: transform .15s ease, box-shadow .15s ease;
+}
+.btn:hover{ transform: translateY(-1px); box-shadow:0 12px 30px rgba(0,0,0,.24) }
+.btn-ghost{
+  background: transparent; color:#fefefe; border:1px solid #ffffff66;
+}
+
+/* Tira de “polaroids” */
+.strip{
+  display:flex; gap:14px; justify-content:center; flex-wrap:wrap;
+  padding:12px 6px 2px; margin-top:6px;
+}
+.polaroid{
+  width: 150px; aspect-ratio: 3/4;
+  background:#fff; color:#111; border-radius:10px;
+  box-shadow: 0 10px 25px rgba(0,0,0,.35);
+  padding:8px 8px 18px; text-align:center; font-size:.8rem;
+  transform: rotate(var(--rot, -3deg));
+  transition: transform .25s ease, filter .25s ease;
+}
+.polaroid img{
+  width:100%; height:100%; object-fit:cover; border-radius:6px;
+  filter: contrast(1.05) saturate(1.05);
+}
+.polaroid:hover{ transform: rotate(0deg) translateY(-2px) scale(1.02); filter: brightness(1.02) }
+
+/* Pie */
+.footer{
+  text-align:center; font-size:.9rem; opacity:.8; margin-top:6px;
+}
+
+/* Cursor suave */
+.pointer{
+  position:fixed; top:0; left:0; width:18px; height:18px; border:2px solid #fff;
+  border-radius:50%; transform:translate(-50%, -50%);
+  pointer-events:none; z-index:10; opacity:.7;
+  mix-blend-mode: screen;
+}
+</style>
+</head>
+<body class="aurora">
+
+<div id="tsparticles"></div>
+
+<div class="wrap">
+  <div class="card" id="card">
+    <div class="header">
+      <div class="logo-heart">❤</div>
+      <div class="title">Un pequeño instante para ti</div>
+    </div>
+
+    <div class="msg" id="msg"></div>
+
+    <div class="actions">
+      <button class="btn" id="open">Abrir carta</button>
+      <button class="btn btn-ghost" id="spark">Otra chispa</button>
+    </div>
+
+    <div class="strip">
+      <!-- Cambia las imágenes por las tuyas si quieres -->
+      <div class="polaroid" style="--rot:-4deg">
+        <img alt="Flores suaves"
+             src="img/flores.avif"/>
+        <div>Flores</div>
+      </div>
+      <div class="polaroid" style="--rot:2deg">
+        <img alt="Luz de tarde"
+             src="img/luz de noche.avif"/>
+        <div>Tarde/Noche</div>
+      </div>
+      <div class="polaroid" style="--rot:-6deg">
+        <img alt="Café"
+             src="img/cafe.jpg"/>
+        <div>Café juntos (pronto)</div>
+      </div>
+      <div class="polaroid" style="--rot:5deg">
+        <img alt="Cielo nocturno"
+             src="img/noche.webp"/>
+        <div>Mismo cielo</div>
+      </div>
+    </div>
+
+    <div class="footer">Hecho con cariño • Siempre que quieras, vuelve a abrir la carta ✨</div>
+  </div>
+</div>
+
+<div class="pointer" id="pointer"></div>
+
+<script>
+/* =======================
+   Aparición de la carta
+   ======================= */
+const card = document.getElementById('card');
+requestAnimationFrame(()=>{
+  card.style.transition = "transform .7s cubic-bezier(.2,.7,.2,1), opacity .7s ease";
+  card.style.opacity = 1;
+  card.style.transform = "translateY(0) scale(1)";
+});
+
+/* =======================
+   Partículas corazón
+   ======================= */
+tsParticles.load("tsparticles", {
+  fpsLimit: 60,
+  background: { color: "transparent" },
+  particles: {
+    number: { value: 40 },
+    move: { enable: true, speed: 0.5, outModes: { default: "out" } },
+    opacity: { value: {min:.35, max:.85} },
+    size: { value: { min: 12, max: 22 } },
+    shape: { type: "char",
+      character: {
+        value: ["❤", "💖", "✨"],
+        font: "serif", weight: "400", fill: true
+      }
+    },
+    color: { value: ["#ff7b97","#ffd3dd","#ffffff","#b3ecff"] }
+  },
+  interactivity: {
+    events: { onHover: { enable:true, mode:"repulse" }, onClick: { enable:true, mode:"push" } },
+    modes: { repulse: { distance: 120 }, push: { quantity: 4 } }
+  }
+});
+
+/* =======================
+   Máquina de escribir
+   ======================= */
+let typed;
+const openBtn = document.getElementById('open');
+const sparkBtn = document.getElementById('spark');
+
+openBtn.addEventListener('click', startTyping);
+function startTyping(){
+  if (typed) { typed.destroy(); }
+  document.getElementById('msg').innerHTML = "";
+  typed = new Typed('#msg', {
+    strings: [
+`Hola, mi flaca bella 💫
+\n\n
+Solo quería dejarte este instante:
+que la prisa se detenga un poquito,
+que respires hondo y sientas
+que te quiero y te aprecio mucho.
+\n\n
+Gracias por cada charla, por tu calma,
+por ese brillo suave cada día que te veo reír.
+Aquí sigo — cerquita, aunque haya mapa —
+y con ganas de seguir sumando momentos contigo.
+\n\n
+Como siempre, habrá días buenos y malos,
+y ahí estaré contigo a tu lado compartiendo risas
+y lágrimas, ¡quieras o no! >:3
+\n\n
+Me enamoré de tu esencia y me saqué la lotería
+el día en el que básicamente me pediste que fuéramos pareja :V,
+literal quedé… ni en novelas pasan este tipo de cosas jsjs
+\n\n
+Te quiero muchimirimiromisomsirhpqowuenbfñljasdbnpo..misimo, mi flaca hermosa u3u
+`
+    ],
+    typeSpeed: 28,
+    backSpeed: 0,
+    smartBackspace: true,
+    showCursor: true,
+    cursorChar: '▌',
+    onComplete: ()=> {
+      confetti({ particleCount: 140, spread: 70, origin: { y: 0.7 } });
+    }
+  });
+}
+
+/* =======================
+   Chispa extra
+   ======================= */
+sparkBtn.addEventListener('click', ()=>{
+  confetti({ particleCount: 90, spread: 60, startVelocity: 25, origin: { y: 0.8 } });
+});
+
+/* =======================
+   Cursor suave
+   ======================= */
+const pointer = document.getElementById('pointer');
+document.addEventListener('mousemove', e=>{
+  pointer.style.transform = `translate(${e.clientX}px, ${e.clientY}px)`;
+});
+</script>
+</body>
+</html>
